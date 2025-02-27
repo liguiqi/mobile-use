@@ -59,7 +59,7 @@ python webui.py
 
 点击 VLM Configuration 设置多模态大语言模型 Base URL 和 API Key，推荐使用 Qwen2.5-VL 系列的多模态大语言模型。
 
-![alt text](docs/assets/vlm_configuration.png)
+![alt text](assets/vlm_configuration.png)
 
 
 在左下方的输入框输入任务描述，点击开始即可执行任务。
