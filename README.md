@@ -94,20 +94,20 @@ Case6：帮我去OPPO商城、京东、以及淘宝分别看一下oppofind n5售
 
 The `Android ADB Server Host` and `Android ADB Server Port` allow you to specify the address and port of the android ADB service, which can be used for remote device connections or local android ADB services on non-default port. When multiple devices exist, you need to specify the `Device Serial No`. The `Reset to HOME` parameter indicates whether to return the phone to the home page before executing the task. If you continue the previous task, you need to cancel this option.
 
-![alt text](assets/mobile_settings.png)
+![alt text](docs/assets/mobile_settings.png)
 
 **⚙️ Agent Settings**
 
 The `Max Run Steps` parameter specifies the maximum number of iteration steps for the Agent. If the current task exceeds the maximum number of iteration steps, the task will be stopped. Therefore, you are advised to set a larger value for complex tasks with more operation steps. The `Maximum Latest Screenshot` is to control the number of latest screenshots that the Agent can see. Because pictures consume more tokens, when the task has more steps, Appropriately take a Screenshot of the latest `Maximum Latest Screenshot` and send it to VLM to generate the next operation accordingly. The `Maximum Reflection Action` is to control the maximum number of reflection times of the Agent. The greater the value, the higher the fault tolerance rate of the Agent, but the longer the processing time of the task. 
 
-![alt text](assets/agent_settings.png)
+![alt text](docs/assets/agent_settings.png)
 
 
 **🔧 VLM Configuration**
 
 Click `VLM Configuration` to specify the Base URL and API Key of the multimodal large language model, as well as the model name and temperature coefficient. It is recommended to use the multimodal large language model of Qwen2.5-VL series.
 
-![alt text](assets/vlm_configuration.png)
+![alt text](docs/assets/vlm_configuration.png)
 
 
 ### Use agent with code
