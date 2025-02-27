@@ -1,0 +1,26 @@
+[project]
+name = "mobile-use"
+version = "0.0.1"
+description = "A GUI Agent to Control your Mobile using Natural Language."
+authors = [
+    {name = "zhoujiamu",email = "zhoujiamu@oppo.com"},
+    {name = "lining",email = "lining2@oppo.com"},
+    {name = "pengqiuying",email = "pengqiuying@oppo.com"}
+]
+license = {text = "MIT License"}
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+openai = ">=1.62.0,<2.0.0"
+gradio = ">=5.16.0,<6.0.0"
+adbutils = ">=2.8.0,<3.0.0"
+python-dotenv = ">=1.0.1,<2.0.0"
+autoregister = {file = "./third_party/wheel/autoregister-0.0.1-py3-none-any.whl"}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
