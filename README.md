@@ -51,9 +51,11 @@ python webui.py
 
 ### Usage
 Once the service starts successfully, open the address http://127.0.0.1:7860 in your browser to access the WebUI page, as shown below:
-![](static/demo.png)
+
+![](docs/assets/webui.png)
 
 Click VLM Configuration to set the Base URL and API Key of the multimodal large language model. It is recommended to use the multimodal large language model of Qwen2.5-VL series.
+
 ![alt text](docs/assets/vlm_configuration.png)
 
 Input task descriptions in the input box at the lower left corner, click start to execute tasks.
@@ -61,21 +63,27 @@ Input task descriptions in the input box at the lower left corner, click start t
 
 ## 🎉 More Demo
 Case1：Search the latest news of DeepSeek-R2 in Xiaohongshu APP and forward one of the news to the Weibo App
+
 ![](docs/assets/search_forward_2x.gif)
 
 Case2：Order 2 Luckin coffees with Meituan, 1 hot raw coconut latte standard sweet, and 1 cold light jasmine
+
 ![](docs/assets/order_coffee_en_2x.gif)
 
 Case3：用美团点一杯咖啡，冰的，标准糖
+
 ![](docs/assets/demo01_2x.gif)
 
 Case4：用美团帮我点2杯瑞幸咖啡，要生椰拿铁标准糖、热的
+
 ![](docs/assets/order_coffee_zh_2x.gif)
 
 Case5：在浏览器找一张OPPO Find N5图片，询问DeepSeek应用该手机介绍信息，将找到的图片和介绍信息通过小红书发布
+
 ![](docs/assets/demo03_2x.gif)
 
 Case6：帮我去OPPO商城、京东、以及淘宝分别看一下oppofind n5售价是多少
+
 ![](docs/assets/oppofindn5_price_zh_2x.gif)
 
 

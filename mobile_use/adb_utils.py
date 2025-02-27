@@ -17,11 +17,11 @@
 import os
 import re
 import time
-from typing import Any, Callable, Collection, Iterable, Literal, Optional, TypeVar
 import unicodedata
-from absl import logging
+import logging
 import immutabledict
 from adbutils import AdbDevice
+from typing import Any, Callable, Collection, Iterable, Literal, Optional, TypeVar
 
 T = TypeVar('T')
 

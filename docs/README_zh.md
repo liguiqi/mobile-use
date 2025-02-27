@@ -55,10 +55,11 @@ python webui.py
 ### 使用方式
 待服务启动成功之后，在浏览器打开地址：http://127.0.0.1:7860，即可进入到 WebUI 页面，如下图所示：
 
-![](../static/demo.png)
+![](assets/webui.png)
 
 点击 VLM Configuration 设置多模态大语言模型 Base URL 和 API Key，推荐使用 Qwen2.5-VL 系列的多模态大语言模型。
-![alt text](image-1.png)
+
+![alt text](docs/assets/vlm_configuration.png)
 
 
 在左下方的输入框输入任务描述，点击开始即可执行任务。
@@ -66,21 +67,27 @@ python webui.py
 
 ## 🎉 More Demo
 Case1：Search the latest news of DeepSeek-R2 in Xiaohongshu APP and forward one of the news to the Weibo App
+
 ![](assets/search_forward_2x.gif)
 
 Case2：Order 2 Luckin coffees with Meituan, 1 hot raw coconut latte standard sweet, and 1 cold light jasmine
+
 ![](assets/order_coffee_en_2x.gif)
 
 Case3：用美团点一杯咖啡，冰的，标准糖
+
 ![](assets/demo01_2x.gif)
 
 Case4：用美团帮我点2杯瑞幸咖啡，要生椰拿铁标准糖、热的
+
 ![](assets/order_coffee_zh_2x.gif)
 
 Case5：在浏览器找一张OPPO Find N5图片，询问DeepSeek应用该手机介绍信息，将找到的图片和介绍信息通过小红书发布
+
 ![](assets/demo03_2x.gif)
 
 Case6：帮我去OPPO商城、京东、以及淘宝分别看一下oppofind n5售价是多少
+
 ![](assets/oppofindn5_price_zh_2x.gif)
 
 
