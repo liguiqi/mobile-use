@@ -1,7 +1,7 @@
 # Mobile Use 📱
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Mobile Use**​ 是一款创新的开源项目，致力于通过自然语言指令实现智能手机的全面自动化操作。与现有系统级手机助手相比，Mobile Use 不仅支持操作系统级应用，还能无缝操控第三方应用，突破了传统 API 的限制。当前项目通过 Android 调试桥（ADB）和 WebUI 输入任务指令的方式实现控制，未来可直接开发为手机应用，并支持文字、语音等多种交互方式。本项目的核心在于结合视觉大语言模型（VLM）的语义与视觉理解能力，构建 GUI 智能体方案，旨在赋予手机助手更强大的功能，让用户通过自然语言随心所欲地操控手机，真正实现“所想即所得”的交互体验。
+**Mobile Use**​​ 是一款基于视觉大语言模型（Vision Language Model）的 GUI 智能体应用方案，用户通过 Android 调试桥（ADB）连接手机，在 WebUI 输入任务指令实现自动化操作智能手机。
 
 [ 中文 | [English](../README.md) ]
 
