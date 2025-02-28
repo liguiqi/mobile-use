@@ -1,9 +1,8 @@
 # Mobile Use 📱
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> A GUI agent system for operating smartphones through natural language commands.
+**Mobile Use** is an innovative open-source project dedicated to achieving comprehensive automation of smartphones through natural language commands. Unlike existing system-level mobile assistants, Mobile Use not only supports operating system-level applications but also seamlessly controls third-party applications, breaking through the limitations of traditional APIs. Currently, the project achieves control through Android Debug Bridge (ADB) and WebUI task instruction input. In the future, it will be directly deployable as a mobile application, supporting multiple interaction methods such as text and voice. The core of the project lies in its GUI agent solution, which integrates the semantic and visual comprehension capabilities of Visual-Language Models (VLM). Its goal is to empower mobile assistants with more advanced functionalities, enabling users to effortlessly control their smartphones through natural language, truly realizing an "what you think is what you get" interactive experience.
 
-**Mobile Use** is a groundbreaking open-source project that automates smartphone operations via natural language instructions. By combining the semantic and visual understanding capabilities of Vision-Language Models (VLM) with the system-level control of Android Debug Bridge (ADB), it allows you to interact directly with your phone using human language.
 
 [ English | [中文](docs/README_zh.md) ]
 
