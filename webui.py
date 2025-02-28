@@ -47,7 +47,7 @@ class Worker:
 
     def reset(self, env: Dict[str, Any], vlm: Dict[str, Any], agent: Dict[str, Any], goal: str):
         logger.info("Reset Agent and Environment")
-        env = Environment(**env, port=5038)
+        env = Environment(**env)
         vlm = VLMWrapper(**vlm)
         self._images.clear()
         self._agent = Agent.from_params({'type': 'ReAct', 'env': env, 'vlm': vlm, **agent})
@@ -182,7 +182,7 @@ def run_agent(request: gr.Request, input_content, messages, image, *args):
             worker.reset(goal=input_content, **params)
         except Exception as e:
             logger.error(e)
-            messages.append(ChatMessage(role="assistant", content=f'The agent initialization fails. Check whether the configuration information is incorrect'))
+            messages.append(ChatMessage(role="assistant", content=f'The agent initialization fails: {e}'))
             yield [messages, image] + get_button_state(True, False, True)
             return
 
@@ -275,6 +275,16 @@ def build_agent_ui_demo():
                 with gr.Column(scale=2):
                     with gr.Accordion("📱 Mobile Settings", open=False):
                         with gr.Group():
+                            host = gr.Textbox(
+                                label="Android ADB Server Host",
+                                placeholder='127.0.0.1',
+                                info="Android ADB server host, support remote device.",
+                            )
+                            port = gr.Number(
+                                label="Android ADB Server Port",
+                                value=5037,
+                                info="Android ADB server port",
+                            )
                             serial_no = gr.Textbox(
                                 label="Device Serial No.",
                                 placeholder='a22d0110',
@@ -286,6 +296,8 @@ def build_agent_ui_demo():
                                 interactive=True,
                                 info="Reset the device to HOME screen",
                             )
+                            add_params_component('env', 'host', host)
+                            add_params_component('env', 'port', port)
                             add_params_component('env', 'serial_no', serial_no)
                             add_params_component('env', 'go_home', reset_to_home)
                     with gr.Accordion("⚙️ Agent Settings", open=False):

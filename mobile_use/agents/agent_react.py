@@ -2,11 +2,12 @@ import logging
 import re
 from typing import Iterator
 
+from qwen_vl_utils import smart_resize
 from mobile_use.action import ACTION_SPACE
 from mobile_use.scheme import *
 from mobile_use.environ import Environment
 from mobile_use.vlm import VLMWrapper
-from mobile_use.utils import encode_image_url, contains_chinese, smart_resize
+from mobile_use.utils import encode_image_url, contains_chinese
 from mobile_use.agents import Agent
 
 
@@ -234,6 +235,8 @@ class ReActAgent(Agent):
             env_state = self.env.get_state()
             pixels = env_state.pixels.copy()
             pixels.thumbnail((1024, 1024))
+            h, w = smart_resize(height=pixels.height, width=pixels.width)
+            pixels = pixels.resize([w, h])
             img_msg = {
                 "type": "image_url",
                 "image_url": {"url": encode_image_url(pixels)}
@@ -260,13 +263,11 @@ class ReActAgent(Agent):
             yield _step_data
         counter = self.max_reflection_action
         reason, action = None, None
-        h, w = smart_resize(height=pixels.height, width=pixels.width)
-        pixels_size_to_vlm = [w, h]
         while counter > 0:
             try:
                 content = step_data.content
                 step_data.vlm_call_history.append(VLMCallingData(self.messages, response))
-                reason, action, action_r = parse_reason_and_action(content, pixels_size_to_vlm, env_state.pixels.size)
+                reason, action, action_r = parse_reason_and_action(content, pixels.size, env_state.pixels.size)
                 logger.info("REASON: %s" % reason)
                 logger.info("ACTION: %s" % str(action))
                 self.messages[-1]['content'].append({
