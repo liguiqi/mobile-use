@@ -5,7 +5,6 @@ import logging
 import adbutils
 from .scheme import Action, EnvState
 from mobile_use.utils import contains_chinese
-from .adb_utils import launch_app
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +47,9 @@ class Environment:
         return state
     
     def execute_action(self, action: Action):
-        if action.name == 'open_app':
+        if action.name == 'open_app' or action.name == 'open':
             package_name = action.parameters['package_name']
             self._d.app_start(package_name)
-        elif action.name == 'open':
-            text = action.parameters['text']
-            launch_app(text, self._d)
         elif action.name == 'click' or action.name == 'left_click':
             if 'coordinate' in action.parameters:       # QwenAgent
                 x, y = action.parameters['coordinate']
