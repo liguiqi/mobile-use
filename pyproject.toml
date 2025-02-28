@@ -18,7 +18,6 @@ adbutils = ">=2.8.0,<3.0.0"
 python-dotenv = ">=1.0.1,<2.0.0"
 immutabledict = ">=4.2.1"
 colorama = ">=0.4.6"
-qwen-vl-utils = ">=0.0.10"
 autoregister = {file = "./third_party/wheel/autoregister-0.0.1-py3-none-any.whl"}
 
 [tool.poetry.group.dev.dependencies]

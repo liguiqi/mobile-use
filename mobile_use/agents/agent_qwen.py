@@ -5,15 +5,13 @@ we implement the agent in QwenAgent class.
 
 import logging
 import re
-from typing import List, Iterator, Union, Tuple
+from typing import Iterator
 import json
-
-from qwen_vl_utils import smart_resize
 
 from mobile_use.scheme import *
 from mobile_use.environ import Environment
 from mobile_use.vlm import VLMWrapper
-from mobile_use.utils import encode_image_url
+from mobile_use.utils import encode_image_url, smart_resize
 from mobile_use.agents import Agent
 
 

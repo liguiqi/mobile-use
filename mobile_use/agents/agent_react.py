@@ -2,12 +2,11 @@ import logging
 import re
 from typing import Iterator
 
-from qwen_vl_utils import smart_resize
 from mobile_use.action import ACTION_SPACE
 from mobile_use.scheme import *
 from mobile_use.environ import Environment
 from mobile_use.vlm import VLMWrapper
-from mobile_use.utils import encode_image_url, contains_chinese
+from mobile_use.utils import encode_image_url, contains_chinese, smart_resize
 from mobile_use.agents import Agent
 
 
