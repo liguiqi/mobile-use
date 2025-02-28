@@ -7,7 +7,7 @@
 
 ![](assets/TurnOnBluetoothAndWIFI_zh_2x.gif)
 
-用户在 Web 界面输入自然人语言指令，Mobile Use 的 GUI 智能体自动操作手机并完成任务
+用户在 Web 界面输入自然人语言指令，Mobile Use 的 GUI 智能体自动操作手机并完成任务。
 
 ## ✨ 核心特性
 - **自然语言交互**：自然语言指令控制手机

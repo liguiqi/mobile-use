@@ -9,7 +9,7 @@
 
 ![AI Did My Groceries](https://madeagents.oss-cn-beijing.aliyuncs.com/TurnOnBluetoothAndWIFI_en_2x.gif)
 
-The user enters the natural person language command on the Web interface, and the GUI agent of Mobile Use automatically operates the mobile phone and completes the task
+The user enters the natural person language command on the Web interface, and the GUI agent of Mobile Use automatically operates the mobile phone and completes the task.
 
 ## ✨ Key Features
 - **Natural Language Interaction**: Control your phone using everyday English/Chinese.
