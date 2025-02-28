@@ -1,4 +1,4 @@
-import io
+import re
 import os
 import time
 import json
@@ -6,7 +6,7 @@ import pprint
 import logging
 import gradio as gr
 
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from dotenv import load_dotenv
 from gradio import ChatMessage
 from typing import Dict, Any
@@ -52,10 +52,11 @@ class Worker:
         self._images.clear()
         self._agent = Agent.from_params({'type': 'ReAct', 'env': env, 'vlm': vlm, **agent})
         i = 0
-        history_path = os.path.join(IMAGE_OUTPUT, goal[:128])
+        name = re.sub(r'[^\w\u4e00-\u9fff\s-]', '', goal[:128])
+        history_path = os.path.join(IMAGE_OUTPUT, name)
         while os.path.exists(history_path):
             i += 1
-            history_path = os.path.join(IMAGE_OUTPUT, goal[:128]) + f'_{i}'
+            history_path = os.path.join(IMAGE_OUTPUT, name) + f'_{i}'
         self._history_path = history_path
         os.makedirs(self._history_path)
 
@@ -203,7 +204,14 @@ def run_agent(request: gr.Request, input_content, messages, image, *args):
     # save the history
     messages_dict = []
     for msg in messages:
-        messages_dict.append(asdict(msg))
+        try:
+            msg = asdict(msg)
+        except:
+            pass      
+        if isinstance(msg, dict):
+            messages_dict.append(msg)
+        else:
+            logger.error(f"Error message format: {type(msg)} {msg}")
     with open(os.path.join(worker._history_path, 'messages.json'), 'w', encoding='utf-8') as writer:
         json.dump(messages_dict, writer, ensure_ascii=False, indent=4)
 
