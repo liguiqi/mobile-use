@@ -9,11 +9,12 @@
 
 ![AI Did My Groceries](https://madeagents.oss-cn-beijing.aliyuncs.com/TurnOnBluetoothAndWIFI_en_2x.gif)
 
+The user enters the natural person language command on the Web interface, and the GUI agent of Mobile Use automatically operates the mobile phone and completes the task
 
 ## ✨ Key Features
 - **Natural Language Interaction**: Control your phone using everyday English/Chinese.
 - **Smart Element Recognition**: Automatically parses GUI layouts and identifies operational targets.
-- **Multi-task Orchestration**: Supports decomposition of complex instructions and multi-step operations.
+- **Complex Task Processing**: Supports decomposition of complex task and multi-step operations.
 
 ## 🚀 Quick Start
 ### Prerequisites
