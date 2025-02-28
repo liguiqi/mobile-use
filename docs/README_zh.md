@@ -6,7 +6,7 @@
 
 **Mobile Use** 是一个突破性的开源项目，通过自然语言指令实现智能手机的自动化操作。结合视觉大语言模型（VLM）的语义与视觉理解能力和 Android 调试桥（ADB）的系统级控制，让您可以用人类语言直接与手机交互。
 
-[ 中文 | [English](README.md) ]
+[ 中文 | [English](../README.md) ]
 
 ![](assets/TurnOnBluetoothAndWIFI_zh_2x.gif)
 
