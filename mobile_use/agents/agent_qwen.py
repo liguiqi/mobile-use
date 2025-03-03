@@ -1,6 +1,8 @@
 """
 Following the design of mobile agent in Qwen2.5-VL, 
 we implement the agent in QwenAgent class.
+
+Note: Call user is not supported in this version.
 """
 
 import logging
@@ -57,7 +59,7 @@ For each function call, return a json object with function name and arguments wi
 THINK_AND_SUMMARY_PROMPT = "Before answering, explain your reasoning step-by-step in <thinking></thinking> tags, and insert them before the <tool_call></tool_call> XML tags.\nAfter answering, summarize your action in <conclusion></conclusion> tags, and insert them after the <tool_call></tool_call> XML tags."
 
 
-ACTION_SPACE = ["key", "click", "left_click", "long_press", "swipe", "type", "answer", "system_button", "open", "wait", "terminate"]
+ACTION_SPACE = ["key", "click", "left_click", "long_press", "swipe", "scroll", "type", "answer", "system_button", "open", "wait", "terminate"]
 
 def _parse_response(content: str, size: tuple[float, float], raw_size: tuple[float, float]) -> Action:
     reason = re.search(r'<thinking>(.*?)</thinking>', content, flags=re.DOTALL)
@@ -225,7 +227,7 @@ class QwenAgent(Agent):
                 counter -= 1
 
         if action is None:
-            logger.error("Action parse error after max retry.")
+            logger.warning("Action parse error after max retry.")
         else:
             if action.name == 'terminate':
                 if action.parameters['status'] == 'success':
@@ -240,7 +242,7 @@ class QwenAgent(Agent):
                 try:
                     self.env.execute_action(action)
                 except Exception as e:
-                    logger.error(f"Failed to execute the action: {action}. Error: {e}")
+                    logger.warning(f"Failed to execute the action: {action}. Error: {e}")
                     action = None
                 step_data.exec_env_state = self.env.get_state()
 
