@@ -136,7 +136,7 @@ def _parse_response(content: str, size: tuple[float, float], raw_size: tuple[flo
 
 
 @Agent.register('QwenWithSummary')
-class QwenAgent(Agent):
+class QwenWithSummaryAgent(Agent):
     def __init__(
             self, 
             env: Environment,
