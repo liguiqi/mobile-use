@@ -275,8 +275,8 @@ This project is licensed under the MIT License, which permits free use and modif
 If you have used this project in your research or work, please cite:
 ```
 @software{
-  title = {Mobile Use: A GUI agent system for operating smartphones through natural language commands.},
-  author = {Jiamu Zhou, Ning Li, Qiuying Peng, Xiaoyun Mo, Qiqiang Lin, Jun Wang, Yin Zhao},
+  title = {Mobile Use​: Automate your mobile with AI - Any app, any task.},
+  author = {Jiamu Zhou, Xiaoyun Mo, Ning Li, Qiuying Peng},
   year = {2025},
   publisher = {GitHub},
   url = {https://github.com/MadeAgents/mobile-use}

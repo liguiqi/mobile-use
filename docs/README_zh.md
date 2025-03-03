@@ -275,7 +275,7 @@ agent = Agent.from_params(dict(type='custom', env=env, vlm=vlm, max_steps=3))
 如果您在您的研究或工作中使用了本项目，请引用：
 ```
 @software{
-  title = {Mobile Use: A GUI agent system for operating smartphones through natural language commands.},
+  title = {Mobile Use​: Automate your mobile with AI - Any app, any task.},
   author = {Jiamu Zhou, Xiaoyun Mo, Ning Li, Qiuying Peng},
   year = {2025},
   publisher = {GitHub},
