@@ -19,7 +19,7 @@ The user inputs the task description on the Web interface, and the Mobile Use au
 
 
 ## ✨ Key Features
-- **Natural Language Interaction**: Control your phone using everyday English/Chinese.
+- **Auto-operating the phone**: Automatically operate the UI to complete tasks based on user input descriptions.
 - **Smart Element Recognition**: Automatically parses GUI layouts and identifies operational targets.
 - **Complex Task Processing**: Supports decomposition of complex task and multi-step operations.
 

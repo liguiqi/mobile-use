@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 
 
 ## ✨ 核心特性
-- **自然语言交互**：自然语言指令控制手机
+- **自动操作手机**：基于用户的输入任务描述，自动操作UI完成任务
 - **智能元素识别**：解析GUI布局并定位操作目标
 - **复杂任务处理**：支持复杂指令分解和多步操作
 
@@ -41,7 +41,7 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 
 
 ### 安装指南
-> `mobile-use` 需要使用 [adb](https://developer.android.com/tools/adb) 来控制手机，需要预先安装并配置好相关服务和连接。
+> `mobile-use` 需要使用 [adb](https://developer.android.com/tools/adb) 来控制手机，需要预先安装相关工具并使用USB连接手机和电脑。
 
 #### 1. 克隆项目
 ```

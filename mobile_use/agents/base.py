@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from autoregister import Registrable
+from pyregister import Registrable
 from typing import Iterator, List
 
 from mobile_use.scheme import StepData, AgentState, EpisodeData
