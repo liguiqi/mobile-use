@@ -284,4 +284,9 @@ If you have used this project in your research or work, please cite:
 ```
 
 ## 🤝 Acknowledgements
-This repo benefits from [Gradio](https://www.gradio.app) and [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5).Thanks for their wonderful works.
+This project benefits from the contributions of:
+- Inspiration from [browser-use](https://github.com/browser-use/browser-use)
+- The large language model for the agent is based on [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
+- The Web UI is built on [Gradio](https://www.gradio.app)
+
+Thanks for their wonderful works.

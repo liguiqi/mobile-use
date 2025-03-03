@@ -284,4 +284,9 @@ agent = Agent.from_params(dict(type='custom', env=env, vlm=vlm, max_steps=3))
 ```
 
 ## 🤝 致谢
-本项目得益于 [Gradio](https://www.gradio.app) 和 [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)，感谢他们的精彩工作。
+本项目得益于：
+- 灵感来自 [browser-use](https://github.com/browser-use/browser-use)
+- 智能体的大模型是基于 [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
+- Web UI 是基于 [Gradio](https://www.gradio.app)
+
+感谢他们的精彩工作。
