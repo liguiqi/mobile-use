@@ -1,14 +1,22 @@
 # Mobile Use 📱
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Mobile Use**​ is a GUI Agent application based on Vision Language Model (VLM) that allows you to control your smartphones using natural language through Android Debug Bridge (ADB) and WebUI task input.
+
+<h2 style="text-align: center;">Mobile Use​: Automate your mobile with AI - Any app, any task.</h2>
+
+![](docs/assets/framework.png)
 
 
 [ English | [中文](docs/README_zh.md) ]
 
 https://github.com/user-attachments/assets/c82ae51e-f0a2-4c7b-86e8-e3411d9749bb
 
-The user enters the natural person language command on the Web interface, and the GUI agent of Mobile Use automatically operates the mobile phone and completes the task.
+The user inputs the task description on the Web interface, and the Mobile Use automatically operates the mobile phone and completes the task.
+
+
+## 📊 Benchmark
+![](docs/assets/benchmark.png)
+
 
 ## ✨ Key Features
 - **Natural Language Interaction**: Control your phone using everyday English/Chinese.
@@ -17,9 +25,17 @@ The user enters the natural person language command on the Web interface, and th
 
 ## 🚀 Quick Start
 ### Prerequisites
-- Python 3.10+
-- Enable developer mode on your phone
-- [ADB environment](https://developer.android.com/tools/adb)
+#### 1. Python 3.10+
+
+#### 2. Enable developer mode and open USB debugging on your phone
+<img src="docs/assets/usb_debug_en.png" style="width:30%; height:auto;">
+
+#### 3. Install SDK Platform-Tools
+- Step 1. Download SDK Platform-Tools for Desktop, click [there](https://developer.android.com/tools/releases/platform-tools#downloads).
+- Step 2. Unzip the downloaded file and add the platform-tools path to the environment variables.
+![alt text](docs/assets/adb_tool.png)
+- Step 3. Open the command line and enter `adb devices` (Windows: `adb.exe devices`) to verify adb is available or not.
+- Step 4. Connect your computer and phone using a USB cable.
 
 
 ### Installation

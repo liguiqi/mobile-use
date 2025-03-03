@@ -1,13 +1,20 @@
 # Mobile Use 📱
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Mobile Use**​​ 是一款基于视觉大语言模型（Vision Language Model）的 GUI 智能体应用方案，用户通过 Android 调试桥（ADB）连接手机，在 WebUI 输入任务指令实现自动化操作智能手机。
+<h2 style="text-align: center;">Mobile Use​: Automate your mobile with AI - Any app, any task.</h2>
+
+![](assets/framework.png)
 
 [ 中文 | [English](../README.md) ]
 
 https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 
 用户在 Web 界面输入自然人语言指令，Mobile Use 的 GUI 智能体自动操作手机并完成任务。
+
+
+## 📊 Benchmark
+![](assets/benchmark.png)
+
 
 ## ✨ 核心特性
 - **自然语言交互**：自然语言指令控制手机
@@ -20,9 +27,17 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 
 ## 🚀 快速开始
 ### 前置要求
-- Python 3.10+
-- Android 手机开启开发者模式
-- [ADB环境配置](https://developer.android.com/tools/adb)
+#### 1. Python 3.10+
+
+#### 2. 启用开发者模式并打开手机上的USB调试
+<img src="assets/usb_debug_zh.png" style="width:30%; height:auto;">
+
+#### 3. 安装 SDK Platform-Tools 工具
+- Step 1. 下载 SDK Platform-Tools 工具, 点击 [这里](https://developer.android.com/tools/releases/platform-tools#downloads).
+- Step 2. 解压文件并将 `platform-tools` 路径添加至环境变量.
+![alt text](assets/adb_tool.png)
+- Step 3. 打开命令行，输入 `adb devices` (Windows: `adb.exe devices`) 验证 adb 是否可用
+- Step 4. 通过USB线连接电脑和手机
 
 
 ### 安装指南
@@ -260,7 +275,7 @@ agent = Agent.from_params(dict(type='custom', env=env, vlm=vlm, max_steps=3))
 ```
 @software{
   title = {Mobile Use: A GUI agent system for operating smartphones through natural language commands.},
-  author = {Jiamu Zhou, Ning Li, Qiuying Peng, Xiaoyun Mo, Qiqiang Lin, Jun Wang, Yin Zhao},
+  author = {Jiamu Zhou, Xiaoyun Mo, Ning Li, Qiuying Peng},
   year = {2025},
   publisher = {GitHub},
   url = {https://github.com/MadeAgents/mobile-use}
