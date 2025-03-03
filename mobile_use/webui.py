@@ -6,7 +6,7 @@ import pprint
 import logging
 import gradio as gr
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from dotenv import load_dotenv
 from gradio import ChatMessage
 from typing import Dict, Any

@@ -25,47 +25,38 @@ In the [AndroidWord](https://github.com/google-research/android_world) dynamic e
 - **Complex Task Processing**: Supports decomposition of complex task and multi-step operations.
 
 ## 🚀 Quick Start
-### Prerequisites
-#### 1. Python 3.10+
+`mobile-use` requires [ADB](https://developer.android.com/tools/adb) to control the phone, which necessitates the prior installation of the relevant tools and connecting the phone to the computer via USB.
 
-#### 2. Enable developer mode and open USB debugging on your phone
-<img src="docs/assets/usb_debug_en.png" style="width:30%; height:auto;">
-
-#### 3. Install SDK Platform-Tools
+### 1. Install SDK Platform-Tools
 - Step 1. Download SDK Platform-Tools for Desktop, click [there](https://developer.android.com/tools/releases/platform-tools#downloads).
 - Step 2. Unzip the downloaded file and add the platform-tools path to the environment variables.
 ![alt text](docs/assets/adb_tool.png)
 - Step 3. Open the command line and enter `adb devices` (Windows: `adb.exe devices`) to verify adb is available or not.
-- Step 4. Connect your computer and phone using a USB cable.
 
 
-### Installation
-> `mobile-use` requires [adb](https://developer.android.com/tools/adb) to control the phone, so relevant services and connections must be installed and configured in advance.
+### 2. Enable developer mode and open USB debugging on your phone
+<img src="docs/assets/usb_debug_en.png" style="width:30%; height:auto;">
 
-#### 1. Clone the repository
-```
-git clone https://github.com/MadeAgents/mobile-use
-```
 
-#### 2. Install dependencies
-```
-cd mobile-use
-pip install .
-```
-
-#### 3. Verify the adb is connected
+### 3. Connect your computer and phone using a USB cable. And verify the adb is connected.
 Run the `adb devices` (Windows: `adb.exe devices`) command on the command line terminal. If the device serial_no is listed, the connection is successful. The correct log is as follows:
 ```
 List of devices attached
 a22d0110        device
 ```
 
-#### 4. Launch the webui service
+### 4: Install mobile-use
+With pip (Python>=3.10):
 ```
-python webui.py
+pip install mobile-use
 ```
 
-### Usage
+### 5. Launch the webui service
+```
+python -m mobile_use.webui
+```
+
+### 6. Usage
 Once the service starts successfully, open the address http://127.0.0.1:7860 in your browser to access the WebUI page, as shown below:
 
 ![](docs/assets/webui.png)

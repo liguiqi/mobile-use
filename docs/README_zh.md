@@ -27,46 +27,37 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 
 
 ## 🚀 快速开始
-### 前置要求
-#### 1. Python 3.10+
+`mobile-use` 需要使用 [adb](https://developer.android.com/tools/adb) 来控制手机，需要预先安装相关工具并使用USB连接手机和电脑。
 
-#### 2. 启用开发者模式并打开手机上的USB调试
-<img src="assets/usb_debug_zh.png" style="width:30%; height:auto;">
-
-#### 3. 安装 SDK Platform-Tools 工具
+### 1. 安装 SDK Platform-Tools 工具
 - Step 1. 下载 SDK Platform-Tools 工具, 点击 [这里](https://developer.android.com/tools/releases/platform-tools#downloads).
 - Step 2. 解压文件并将 `platform-tools` 路径添加至环境变量.
 ![alt text](assets/adb_tool.png)
 - Step 3. 打开命令行，输入 `adb devices` (Windows: `adb.exe devices`) 验证 adb 是否可用
-- Step 4. 通过USB线连接电脑和手机
+
+### 2. 启用开发者模式并打开手机上的USB调试
+<img src="assets/usb_debug_zh.png" style="width:30%; height:auto;">
 
 
-### 安装指南
-> `mobile-use` 需要使用 [adb](https://developer.android.com/tools/adb) 来控制手机，需要预先安装相关工具并使用USB连接手机和电脑。
-
-#### 1. 克隆项目
-```
-git clone https://github.com/MadeAgents/mobile-use
-```
-
-#### 2. 安装依赖
-```
-pip install .
-```
-
-#### 3. 验证 adb 是否已连接
+### 3. 通过USB线连接电脑和手机，并验证 adb 是否已连接
 在命令行终端执行 `adb devices` （Windows：`adb.exe devices`）命令，如果列出设备号表示已连接成功，正确的日志如下：
 ```
 List of devices attached
 a22d0110        device
 ```
 
-#### 4. 启动服务
+### 4: 安装 mobile-use
+使用 pip 安装 (Python>=3.10):
 ```
-python webui.py
+pip install mobile-use
 ```
 
-### 使用方式
+### 5. 启动服务
+```
+python -m mobile_use.webui
+```
+
+### 6. 使用方式
 待服务启动成功之后，在浏览器打开地址：http://127.0.0.1:7860，即可进入到 WebUI 页面，如下图所示：
 
 ![](assets/webui.png)

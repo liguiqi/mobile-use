@@ -1,9 +1,10 @@
 [project]
 name = "mobile-use"
-version = "0.0.1"
-description = "A GUI Agent to Control your Mobile using Natural Language."
+version = "0.1.0"
+description = "Mobile Use​: Automate your mobile with AI - Any app, any task."
 authors = [
     {name = "zhoujiamu",email = "zhoujiamu@oppo.com"},
+    {name = "moxiaoyun",email = "moxiaoyun@oppo.com"},
     {name = "lining",email = "lining2@oppo.com"},
     {name = "pengqiuying",email = "pengqiuying@oppo.com"}
 ]
