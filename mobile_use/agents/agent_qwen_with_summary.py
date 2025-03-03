@@ -1,6 +1,8 @@
 """
-Following the design of mobile agent in Qwen2.5-VL, 
-we implement the agent in QwenAgent class.
+Based on the design of mobile agent in Qwen2.5-VL, 
+we improve it by adding some guidance and summary part.
+This agent achieves better performance in the online 
+benchmark AndroidWorld.
 
 Note: Call user is not supported in this version.
 """
@@ -19,9 +21,9 @@ from mobile_use.agents import Agent
 
 logger = logging.getLogger(__name__)
 
+IMAGE_PLACEHOLDER = '<|vision_start|><|image_pad|><|vision_end|>'
 
-SYSTEM_PROMPT = """
-You are a helpful assistant.
+PROMPT_PREFIX = """You are a helpful assistant.
 
 # Tools
 
@@ -48,34 +50,72 @@ You are provided with function signatures within <tools></tools> XML tags:
 * `terminate`: Terminate the current task and report its completion status.", "enum": ["key", "click", "long_press", "swipe", "type", "answer", "system_button", "open", "wait", "terminate"], "type": "string"}}, "coordinate": {{"description": "(x, y): The x (pixels from the left edge) and y (pixels from the top edge) coordinates to move the mouse to. Required only by `action=click`, `action=long_press`, and `action=swipe`.", "type": "array"}}, "coordinate2": {{"description": "(x, y): The x (pixels from the left edge) and y (pixels from the top edge) coordinates to move the mouse to. Required only by `action=swipe`.", "type": "array"}}, "text": {{"description": "Required only by `action=key`, `action=type`, `action=answer`, and `action=open`.", "type": "string"}}, "time": {{"description": "The seconds to wait. Required only by `action=long_press` and `action=wait`.", "type": "number"}}, "button": {{"description": "Back means returning to the previous interface, Home means returning to the desktop, Menu means opening the application background menu, and Enter means pressing the enter. Required only by `action=system_button`", "enum": ["Back", "Home", "Menu", "Enter"], "type": "string"}}, "status": {{"description": "The status of the task. Required only by `action=terminate`.", "type": "string", "enum": ["success", "failure"]}}}}, "required": ["action"], "type": "object"}}, "args_format": "Format the arguments as a JSON object."}}}}
 </tools>
 
-For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:
+Here are some useful guidelines you need to follow:
+- If the task is finished, you should terminate the task in time! Do not repeat the action!
+- Before terminate, always remember to use the "answer" action to reply to user explicitly if user asks a question or requests you to answer! Do not repeat the action, you should terminate the task in time after answering once!
+- Action click, long_press and swipe must contain coordinates within.
+- You may be given some history plan and actions, this is the response from the previous loop.
+- You should carefully consider your plan base on the task, screenshot, and history actions.
+- When something does not work as expected (dueto various reasons), sometimes a simple retry can solve the problem, but if it doesn't (you can see that from the history), you should SWITCH to other solutions.
+- Sometimes there is some default text in the text field you want to type in, remember to delete them before typing.
+- To delete some text, you can place the cursor at the right place and long press the backspace to delete all the text.
+"""
+
+SYSTEM_PROMPT = PROMPT_PREFIX + """
+First, write a small plan and finally summarize your next action (with its target element) in one sentence in `Thought` part.
+Then execute an action in the form of function. For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:
+
+## Format
+Thought: The process of thinking.
 <tool_call>
 {{"name": <function-name>, "arguments": <args-json-object>}}
-</tool_call>
-""".strip()
+</tool_call>"""
 
-
-# Not used, because the agent will not follow the output format. Put it here for reference.
-THINK_AND_SUMMARY_PROMPT = "Before answering, explain your reasoning step-by-step in <thinking></thinking> tags, and insert them before the <tool_call></tool_call> XML tags.\nAfter answering, summarize your action in <conclusion></conclusion> tags, and insert them after the <tool_call></tool_call> XML tags."
-
+SUMMARY_PROMPT_TEMPLATE = (
+    '\nThe (overall) user goal/request is: {goal}\n'
+    'Now I want you to summerize the latest step.\n'
+    'You will be given the screenshot before you performed the action,'
+    ' the action you chose (together with the reason) and the screenshot'
+    ' after the action was performed.\n'
+    'This is the screenshot before the action:{image_before_action}\n'
+    'This is the screenshot after the action:{image_after_action}\n'
+    'This is the action you picked: {action}\n'
+    'Based on the reason: {reason}\n\n'
+    'By comparing the two screenshots and the'
+    ' action performed, give a brief summary of this step. This summary'
+    ' will be added to action history and used in future action selection,'
+    ' so try to include essential information you think that will be most'
+    ' useful for future action selections like what you'
+    ' intended to do, why, if it worked as expected, if not'
+    ' what might be the reason (be critical, the action/reason might be'
+    ' wrong), what should/should not be done next and so on. Some more'
+    ' rules/tips you should follow:\n'
+    '- Keep it short (better less than 50 words) and in a single line\n'
+    "- Some actions (like `answer`, `wait`) don't involve screen change,"
+    ' you can just assume they work as expected.\n'
+    '- Given this summary will be added into action history, it can be used as'
+    ' memory to include information that needs to be remembered, or shared'
+    ' between different apps.\n\n'
+    'Summary of this step: '
+)
 
 ACTION_SPACE = ["key", "click", "left_click", "long_press", "swipe", "scroll", "type", "answer", "system_button", "open", "wait", "terminate"]
 
 def _parse_response(content: str, size: tuple[float, float], raw_size: tuple[float, float]) -> Action:
-    reason = re.search(r'<thinking>(.*?)</thinking>', content, flags=re.DOTALL)
+    reason = re.search(r"Thought:(.*?)(?=\n|Action:|<tool_call>|\{\"name\": \"mobile_use\",)", content, flags=re.DOTALL)
     if reason:
         reason_s = reason.group(1).strip()
     else:
         reason_s = None
-    summary = re.search(r'<conclusion>(.*?)</conclusion>', content, flags=re.DOTALL)
+    summary = re.search(r'Summary:(.*)', content, flags=re.DOTALL)
     if summary:
         summary_s = summary.group(1).strip()
     else:
         summary_s = None
-    action = re.search(r'<tool_call>(.*?)</tool_call>', content, flags=re.DOTALL)
+    action = re.search(r'{"name": "mobile_use",(.*?)}}', content, flags=re.DOTALL)
     if not action:
         raise Exception("Cannot extract action in the content.")
-    action_s = action.group(1).strip()
+    action_s = '{"name": "mobile_use",' + action.group(1).strip() + '}}'
     action = json.loads(action_s)
     name = action['arguments']['action']
     if name not in ACTION_SPACE:
@@ -95,7 +135,7 @@ def _parse_response(content: str, size: tuple[float, float], raw_size: tuple[flo
     return reason_s, action_a, action_s, summary_s
 
 
-@Agent.register('Qwen')
+@Agent.register('QwenWithSummary')
 class QwenAgent(Agent):
     def __init__(
             self, 
@@ -126,41 +166,18 @@ class QwenAgent(Agent):
         else:
             return None
 
-    def _process_response(self, response, stream) -> Iterator[StepData]:
+    def _process_response(self, response, stream=False):
         step_data = self.trajectory[-1]
-        step_data.content = ''
-        if stream:
-            though_start, though_end = False, False
-            for chunk in response:
-                # print('chunk: ', chunk)
-                delta = chunk.choices[0].delta
-                if not delta.content:
-                    continue
-                step_data.content += delta.content
-                content = step_data.content
-                # print(content)
-                if not though_start and '<thinking>' in content:
-                    though_start = True
-                    step_data.thought = content.split('<thinking>')[-1].strip()
-                    yield step_data
-                elif though_start and not though_end:
-                    if '</thinking>' in content:
-                        though_end = True
-                        step_data.thought = content.split('<thinking>')[-1].split('</thinking>')[0].strip()
-                    else:
-                        step_data.thought += delta.content
-                    yield step_data
-        else:
-            step_data.content = response.choices[0].message.content
-
+        step_data.content = response.choices[0].message.content
         logger.info("Content from VLM:\n%s" % step_data.content)
 
-    def step(self, stream: bool=False) -> Iterator[StepData]:
+    def step(self, stream: bool=False):
         """Execute the task with maximum number of steps.
 
-        Returns: StepData
+        Returns: Answer
         """
         logger.info("Step %d ... ..." % self.curr_step_idx)
+        answer = None
 
         # Init messages
         if self.curr_step_idx == 0:
@@ -178,7 +195,6 @@ class QwenAgent(Agent):
                 'content': [
                     {'type': 'text','text': f'The user query: {self.goal}\nTask progress (You have done the following operation on the current device): None'},
                     {}, # Place holder for image
-                    # {'type': 'text','text': THINK_AND_SUMMARY_PROMPT},
                 ]
             })
         user_message_length = len(self.messages[1]['content'])
@@ -201,8 +217,7 @@ class QwenAgent(Agent):
 
         step_data = self.trajectory[-1]
         response = self.vlm.predict(self.messages, stream=stream)
-        for _step_data in self._process_response(response, stream=stream):
-            yield _step_data
+        self._process_response(response, stream=stream)
         counter = self.max_reflection_action
         reason, action = None, None
         while counter > 0:
@@ -218,12 +233,18 @@ class QwenAgent(Agent):
                 logger.warning(f"Failed to parse the action from: {content}.Error is {e.args}")
                 msg = {
                     'type': 'text', 
-                    'text': f"Failed to parse the action from: {content}.Error is {e.args}"
+                    'text': f"Failed to parse the action from: {content}.\nError is {e.args}\nPlease follow the format to provide a valid action:\n" + \
+                """
+## Format
+Thought: The process of thinking.
+<tool_call>
+{"name": <function-name>, "arguments": <args-json-object>}
+</tool_call>
+                """.strip()
                 }
                 self.messages[-1]['content'].append(msg)
                 response = self.vlm.predict(self.messages)
-                for _step_data in self._process_response(response, stream=stream):
-                    yield _step_data
+                self._process_response(response, stream=stream)
                 counter -= 1
 
         if action is None:
@@ -240,11 +261,41 @@ class QwenAgent(Agent):
                 logger.info(f"Execute the action: {action}")
 
                 try:
-                    self.env.execute_action(action)
+                    answer = self.env.execute_action(action)
                 except Exception as e:
                     logger.warning(f"Failed to execute the action: {action}. Error: {e}")
                     action = None
-                step_data.exec_env_state = self.env.get_state()
+        step_data.exec_env_state = self.env.get_state()
+
+        # Summary
+        summary = None
+        summary_messages = []
+        summary_messages.append({
+            'role': 'user',
+            'content': [
+                {"type": "text", "text": PROMPT_PREFIX.format(width=resized_width, height=resized_height) + SUMMARY_PROMPT_TEMPLATE.format(
+                    goal=self.goal,
+                    image_before_action=IMAGE_PLACEHOLDER,
+                    image_after_action=IMAGE_PLACEHOLDER,
+                    action=action,
+                    reason=reason
+                )},
+                {
+                "type": "image_url",
+                "image_url": {"url": encode_image_url(pixels)}
+                },
+                {
+                "type": "image_url",
+                "image_url": {"url": encode_image_url(step_data.exec_env_state.pixels)}
+                }
+            ]
+        })
+        try:
+            response = self.vlm.predict(summary_messages)
+            summary = response.choices[0].message.content
+            logger.info("Summary from VLM:\n%s" % summary)
+        except Exception as e:
+            logger.warning(f"Failed to get the summary. Error: {e}")
 
         self.messages[-1]['content'] = self.messages[-1]['content'][:user_message_length]
         if self.curr_step_idx == 0:
@@ -253,16 +304,15 @@ class QwenAgent(Agent):
         if action is None:
             self.messages[-1]['content'][0]['text'] += f'\nStep {self.curr_step_idx + 1}: None'
         else:
-            # self.messages[-1]['content'][0]['text'] += f'\nStep {self.curr_step_idx + 1}: <thinking>\n{reason}\n</thinking>\n<tool_call>\n{action_s}\n</tool_call>\n<conclusion>\n{summary}\n</conclusion>'
-            self.messages[-1]['content'][0]['text'] += f'\nStep {self.curr_step_idx + 1}: <tool_call>\n{action_s}\n</tool_call> '
+            self.messages[-1]['content'][0]['text'] += f'\nStep {self.curr_step_idx + 1}: Thought: {reason}\n<tool_call>\n{action_s}\n</tool_call>\nSummary: {summary}'
 
         step_data.action = action
-        if not stream:
-            step_data.thought = reason
-        yield step_data
+        step_data.thought = reason
+
+        return answer
 
 
-    def iter_run(self, input_content: str, stream: bool=True) -> Iterator[StepData]:
+    def iter_run(self, input_content: str, stream: bool=False) -> Iterator[StepData]:
         """Execute the agent with user input content.
 
         Returns: Iterator[StepData]
@@ -277,8 +327,8 @@ class QwenAgent(Agent):
         for step_idx in range(self.curr_step_idx, self.max_steps):
             self.curr_step_idx = step_idx
             try:
-                for step_data in self.step(stream=stream):
-                    yield step_data
+                self.step(stream=stream)
+                yield self._get_curr_step_data()
             except Exception as e:
                 self.status = AgentStatus.FAILED
                 self.episode_data.status = self.status

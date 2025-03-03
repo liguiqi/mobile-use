@@ -95,6 +95,8 @@ class Environment:
         elif action.name == 'answer':
             text = action.parameters['text']
             os.system(f'adb -s {self._d.get_serialno()} shell am broadcast com.example.ACTION_UPDATE_OVERLAY --es task_type_string "Agent answered:" --es goal_string "{text}"')
+            time.sleep(self.wait_after_action_seconds)
+            return text
         elif action.name == 'system_button':
             button = action.parameters['button']
             if button == 'Back':
@@ -108,3 +110,4 @@ class Environment:
         else:
             raise ValueError(f"Unknown action: {action.name}")
         time.sleep(self.wait_after_action_seconds)
+        return None
