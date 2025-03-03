@@ -17,6 +17,7 @@ The user inputs the task description on the Web interface, and the Mobile Use au
 ## 📊 Benchmark
 ![](docs/assets/benchmark.png)
 
+In the [AndroidWord](https://github.com/google-research/android_world) dynamic evaluation environment, we evaluated the Mobile Use agent solution with the visual large language model Qwen2.5-VL-72B and achieved a 38% success rate.
 
 ## ✨ Key Features
 - **Auto-operating the phone**: Automatically operate the UI to complete tasks based on user input descriptions.

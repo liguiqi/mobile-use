@@ -15,6 +15,7 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 ## 📊 Benchmark
 ![](assets/benchmark.png)
 
+我们在 [AndroidWord](https://github.com/google-research/android_world) 动态测评环境中评估了 Mobile Use 的智能体方案（视觉模型使用 Qwen2.5-VL-72B），获得 38% 的成功率。
 
 ## ✨ 核心特性
 - **自动操作手机**：基于用户的输入任务描述，自动操作UI完成任务
