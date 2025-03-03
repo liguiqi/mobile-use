@@ -5,7 +5,7 @@
 
 [ 中文 | [English](../README.md) ]
 
-![](assets/TurnOnBluetoothAndWIFI_zh_2x.gif)
+https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 
 用户在 Web 界面输入自然人语言指令，Mobile Use 的 GUI 智能体自动操作手机并完成任务。
 
@@ -66,27 +66,32 @@ python webui.py
 ## 🎉 More Demo
 Case1：Search the latest news of DeepSeek-R2 in Xiaohongshu APP and forward one of the news to the Weibo App
 
-![](assets/search_forward_2x.gif)
+https://github.com/user-attachments/assets/c44ddf8f-5d3f-4ace-abb3-fab4838b68a4
+
 
 Case2：Order 2 Luckin coffees with Meituan, 1 hot raw coconut latte standard sweet, and 1 cold light jasmine
 
-![](assets/order_coffee_en_2x.gif)
+https://github.com/user-attachments/assets/6130e87e-dd07-4ddf-a64d-051760dbe6b3
+
 
 Case3：用美团点一杯咖啡，冰的，标准糖
 
-![](assets/demo01_2x.gif)
+https://github.com/user-attachments/assets/fe4847ba-f94e-4baa-b4df-857cadae5b07
+
 
 Case4：用美团帮我点2杯瑞幸咖啡，要生椰拿铁标准糖、热的
 
-![](assets/order_coffee_zh_2x.gif)
+https://github.com/user-attachments/assets/5c4d3ce8-0135-4e6e-b003-b20f81f834d4
+
 
 Case5：在浏览器找一张OPPO Find N5图片，询问DeepSeek应用该手机介绍信息，将找到的图片和介绍信息通过小红书发布
 
-![](assets/demo03_2x.gif)
+https://github.com/user-attachments/assets/4c3d8800-78b7-4323-aad2-8338fe81cb81
+
 
 Case6：帮我去OPPO商城、京东、以及淘宝分别看一下oppofind n5售价是多少
 
-![](assets/oppofindn5_price_zh_2x.gif)
+https://github.com/user-attachments/assets/84990487-f2a3-4921-a20e-fcdebfc8fc60
 
 
 ## ⚙️ 高级用法
