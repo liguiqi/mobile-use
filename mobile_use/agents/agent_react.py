@@ -229,7 +229,10 @@ class ReActAgent(Agent):
             observation = self._user_input
             img_msg = None
         else:
-            observation = IMAGE_PLACEHOLDER
+            # Fixed Picture sequence inconsistency problem in vllm0.7.2 
+            # and Compatible QwenAPI error: '<400> InternalError.Algo.InvalidParameter: Invalid text: <|image_pad|>'
+            observation = '' if 'dashscope.aliyuncs.com' in str(self.vlm.client.base_url) else IMAGE_PLACEHOLDER
+
             # Get the current environment screen
             env_state = self.env.get_state()
             pixels = env_state.pixels.copy()
