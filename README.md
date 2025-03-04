@@ -2,7 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-<h2 style="text-align: center;">Mobile Use​: Automate your mobile with AI - Any app, any task.</h2>
+<h2 style="text-align: center;">Mobile Use​: Your AI assistant for mobile - Any app, any task.</h2>
 
 ![](docs/assets/framework.png)
 
@@ -182,7 +182,7 @@ This project is licensed under the MIT License, which permits free use and modif
 If you have used this project in your research or work, please cite:
 ```
 @software{
-  title = {Mobile Use​: Automate your mobile with AI - Any app, any task.},
+  title = {Mobile Use​: Your AI assistant for mobile - Any app, any task},
   author = {Jiamu Zhou, Xiaoyun Mo, Ning Li, Qiuying Peng},
   year = {2025},
   publisher = {GitHub},

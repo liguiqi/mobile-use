@@ -1,12 +1,12 @@
 [project]
 name = "mobile-use"
-version = "0.1.1"
+version = "0.1.2"
 description = "Mobile Use​: Automate your mobile with AI - Any app, any task."
 authors = [
-    {name = "zhoujiamu",email = "zhoujiamu@oppo.com"},
-    {name = "moxiaoyun",email = "moxiaoyun@oppo.com"},
-    {name = "lining",email = "lining2@oppo.com"},
-    {name = "pengqiuying",email = "pengqiuying@oppo.com"}
+    {name = "zhoujiamu"},
+    {name = "moxiaoyun"},
+    {name = "lining"},
+    {name = "pengqiuying"}
 ]
 license = {text = "MIT License"}
 readme = "README.md"
