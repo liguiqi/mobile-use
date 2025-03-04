@@ -169,6 +169,13 @@ while going:
 ```
 
 
+## 🗺️ Roadmap
+- [ ] Improve agent memory and reflection (summarize, compress.)
+- [ ] Provide multi-agent implementation 
+- [ ] Provide an evaluation process about AndroidWorld dynamic environment 
+- [ ] Develop an APP that can be installed directly on the phone
+
+
 ## 🌱Contributing
 We welcome all forms of contributions! Please read our contribution guide to learn about:
 - How to submit an issue to report problems.
