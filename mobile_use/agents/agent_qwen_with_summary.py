@@ -194,10 +194,19 @@ class QwenWithSummaryAgent(Agent):
                 'role': 'user', 
                 'content': [
                     {'type': 'text','text': f'The user query: {self.goal}\nTask progress (You have done the following operation on the current device): None'},
+                    {}, # Place holder for observation
                     {}, # Place holder for image
                 ]
             })
         user_message_length = len(self.messages[1]['content'])
+
+        # Fixed Picture sequence inconsistency problem in vllm0.7.2 
+        # and Compatible QwenAPI error: '<400> InternalError.Algo.InvalidParameter: Invalid text: <|image_pad|>'
+        observation = '' if 'dashscope.aliyuncs.com' in str(self.vlm.client.base_url) else IMAGE_PLACEHOLDER
+        self.messages[-1]['content'][1] = {
+            'type': 'text',
+            'text': f'Observation: {observation}'
+        }
 
         # Get the current environment screen
         env_state = self.env.get_state()
@@ -207,13 +216,14 @@ class QwenWithSummaryAgent(Agent):
             "type": "image_url",
             "image_url": {"url": encode_image_url(pixels)}
         }
+        self.messages[-1]['content'][2] = img_msg
+
         # Add new step data
         self.trajectory.append(StepData(
             step_idx=self.curr_step_idx,
             curr_env_state=env_state,
             vlm_call_history=[]
         ))
-        self.messages[-1]['content'][1] = img_msg
 
         step_data = self.trajectory[-1]
         response = self.vlm.predict(self.messages, stream=stream)
@@ -275,8 +285,8 @@ Thought: The process of thinking.
             'content': [
                 {"type": "text", "text": PROMPT_PREFIX.format(width=resized_width, height=resized_height) + SUMMARY_PROMPT_TEMPLATE.format(
                     goal=self.goal,
-                    image_before_action=IMAGE_PLACEHOLDER,
-                    image_after_action=IMAGE_PLACEHOLDER,
+                    image_before_action=observation,
+                    image_after_action=observation,
                     action=action,
                     reason=reason
                 )},
