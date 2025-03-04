@@ -79,6 +79,8 @@ Click VLM Configuration to set the Base URL and API Key of the multimodal large 
 
 Input task descriptions in the input box at the lower left corner, click start to execute tasks.
 
+**⚠️ Special Reminder**: The actions are autonomously decided by the intelligent agent, which may pose uncontrollable operational risks. It is recommended that during the experience, you constantly monitor your phone's status. If you encounter any operational risks, promptly terminate the task or use a test phone for the experience to avoid issues caused by accidental operations.
+
 
 ## 🎉 More Demo
 Case1：Search the latest news of DeepSeek-R2 in Xiaohongshu APP and forward one of the news to the Weibo App
