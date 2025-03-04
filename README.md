@@ -32,6 +32,7 @@ In the [AndroidWord](https://github.com/google-research/android_world) dynamic e
 - Step 2. Unzip the downloaded file and add the platform-tools path to the environment variables.
 
     - Windows
+
         In Windows, you can add the `platform-tools` PATH to the ` Path` environment variable on the graphical interface (see [here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10)) or through the command line as follows:
         ```
         setx PATH "%PATH%;D:\your\download\path\platform-tools"
@@ -169,8 +170,8 @@ while going:
 ## 🌱Contributing
 We welcome all forms of contributions! Please read our contribution guide to learn about:
 - How to submit an issue to report problems.
-- The process of participating in feature development, See detail [Developer Document](docs/develop_en.md).
-- Code style and quality standards, See detail [Developer Document](docs/develop_en.md).
+- The process of participating in feature development, See [Developer Document](docs/develop_en.md).
+- Code style and quality standards, See [Developer Document](docs/develop_en.md).
 - Methods for suggesting documentation improvements.
 
 
