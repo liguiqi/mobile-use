@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 ## 📊 Benchmark
 ![](assets/benchmark.png)
 
-我们在 [AndroidWord](https://github.com/google-research/android_world) 动态测评环境中评估了 Mobile Use 的智能体方案（视觉模型使用 Qwen2.5-VL-72B），获得 38% 的成功率。
+我们在 [AndroidWord](https://github.com/google-research/android_world) 动态测评环境中评估了 Mobile Use 的智能体方案（模型使用 Qwen2.5-VL-72B-Instruct），获得 38% 的成功率。
 
 ## ✨ 核心特性
 - **自动操作手机**：基于用户的输入任务描述，自动操作UI完成任务
@@ -192,7 +192,7 @@ while going:
 ## 🤝 致谢
 本项目得益于：
 - 灵感来自 [browser-use](https://github.com/browser-use/browser-use)
-- 智能体的大模型是基于 [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
+- 智能体的多模态大模型是基于 [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
 - Web UI 是基于 [Gradio](https://www.gradio.app)
 
 感谢他们的精彩工作。

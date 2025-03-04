@@ -17,7 +17,7 @@ The user inputs the task description on the Web interface, and the Mobile Use au
 ## 📊 Benchmark
 ![](docs/assets/benchmark.png)
 
-In the [AndroidWord](https://github.com/google-research/android_world) dynamic evaluation environment, we evaluated the Mobile Use agent solution with the visual large language model Qwen2.5-VL-72B and achieved a 38% success rate.
+In the [AndroidWord](https://github.com/google-research/android_world) dynamic evaluation environment, we evaluated the Mobile Use agent solution with the multimodal large language model Qwen2.5-VL-72B-Instruct and achieved a 38% success rate.
 
 ## ✨ Key Features
 - **Auto-operating the phone**: Automatically operate the UI to complete tasks based on user input descriptions.
@@ -193,7 +193,7 @@ If you have used this project in your research or work, please cite:
 ## 🤝 Acknowledgements
 This project benefits from the contributions of:
 - Inspiration from [browser-use](https://github.com/browser-use/browser-use)
-- The large language model for the agent is based on [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
+- The multimodal large language model for the agent is based on [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
 - The Web UI is built on [Gradio](https://www.gradio.app)
 
 Thanks for their wonderful works.
