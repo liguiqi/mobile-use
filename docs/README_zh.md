@@ -32,7 +32,19 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 ### 1. 安装 SDK Platform-Tools 工具
 - Step 1. 下载 SDK Platform-Tools 工具, 点击 [这里](https://developer.android.com/tools/releases/platform-tools#downloads).
 - Step 2. 解压文件并将 `platform-tools` 路径添加至环境变量.
-![alt text](assets/adb_tool.png)
+
+    - Windows
+        Windows系统可以 图形界面或者命令方式添加 `platform-tools` 路径至 `PATH` 环境变量，命令行方式如下：
+        In Windows, you can add the `platform-tools` PATH to the ` Path` environment variable on the graphical interface (see [here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10)) or through the command line as follows:
+        ```
+        setx PATH "%PATH%;D:\your\download\path\platform-tools"
+        ```
+
+    - Mac/Linux
+        ```
+        $ echo 'export PATH=/your/downloads/path/platform-tools:$PATH' >> ~/.bashrc
+        $ source ~/.bashrc
+        ```
 - Step 3. 打开命令行，输入 `adb devices` (Windows: `adb.exe devices`) 验证 adb 是否可用
 
 ### 2. 启用开发者模式并打开手机上的USB调试
@@ -152,109 +164,12 @@ while going:
         print(step_data.action, step_data.thought)
 ```
 
-### 创建定制化 Agent
-
-通过继承 `Agent` 并实现 `step` 和 `iter_run` 方法来定义自定义 Agent。
-
-```python
-from mobile_use.scheme import StepData
-from mobile_use.utils import encode_image_url
-from mobile_use.agents import Agent
-from mobile_use.agents.agent import parse_reason_and_action
-
-from typing import Iterator
-
-
-SYSTEM_PROMPT = """
-You are a GUI agent. You are given a task and your action history, with screenshots. You need to perform the next action to complete the task. 
-
-## Output Format
-```\nThought: ...
-Action: ...\n```
-
-## Action Space
-click(point='(x1,y1)')
-long_press(point='(x1,y1)')
-type(text='')
-scroll(start_point='(x1,y1)', end_point='(x3,y3)')
-press_home()
-press_back()
-finished() # Submit the task regardless of whether it succeeds or fails.
-call_user(question='') # Submit the task and call the user when the task is unsolvable, or when you need the user's help.
-"""
-
-
-@Agent.register('custom')
-class CustomAgent(Agent):
-
-    def reset(self, *args, **kwargs) -> None:
-        """Reset Agent to init state"""
-        self._init_data(**kwargs)
-
-    def step(self, **kwargs) -> Iterator[StepData]:
-        """Get the next step action based on the current environment state.
-
-        Returns: The content is an iterator for StepData
-        """
-        # Init messages
-        if self.curr_step_idx == 0:
-            self.messages.extend([
-                {'role': 'system', 'content': SYSTEM_PROMPT},
-                {'role': 'user', 'content': f'Task goal description: {self.goal}'},
-            ])
-
-        # Get the current environment screen
-        env_state = self.env.get_state()
-        pixels = env_state.pixels.copy()
-        pixels.thumbnail((1024, 1024))
- 
-        # Add new step data
-        step_data = StepData(
-            step_idx=self.curr_step_idx,
-            curr_env_state=env_state,
-            vlm_call_history=[]
-        )
-        self.trajectory.append(step_data)
-
-        self.messages.append({
-                'role': 'user', 
-                'content': [
-                    {'type': 'text', 'text': 'The mobile screenshot:'},
-                    {"type": "image_url", "image_url": {"url": encode_image_url(pixels)}}
-                ]
-        })
-
-        response = self.vlm.predict(self.messages, stream=False)
-        step_data.content = response.choices[0].message.content
-        reason, action = parse_reason_and_action(step_data.content, pixels.size, env_state.pixels.size)
-        step_data.thought = reason
-        step_data.action = action
-
-        self.env.execute_action(action)
-
-    def iter_run(self, input_content: str, stream: str=False) -> Iterator[StepData]:
-        """Execute all step with maximum number of steps base on user input content.
-
-        Returns: The content is an iterator for StepData
-        """
-        self.goal = input_content
-        for step_idx in range(self.curr_step_idx, self.max_steps):
-            self.curr_step_idx = step_idx
-            for step_data in self.step(stream=stream):
-                yield step_data
-```
-
-实例化定制 Agent
-```python
-agent = Agent.from_params(dict(type='custom', env=env, vlm=vlm, max_steps=3))
-```
-
 
 ## 🌱 参与贡献
 我们欢迎各种形式的贡献！请阅读贡献指南了解：
 - 如何提交issue报告问题
-- 参与功能开发的流程
-- 代码风格和质量标准
+- 参与功能开发，详见[开发文档](develop_zh.md)
+- 代码风格和质量标准，详见[开发文档](develop_zh.md)
 - 文档改进建议方式
 
 
