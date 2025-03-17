@@ -88,11 +88,20 @@ class StepData:
     answer: Optional[str] = None        # The final answer for the task goal
     exec_env_state: Optional[EnvState] = None
     vlm_call_history: Optional[List[VLMCallingData]] = None
+    plan: Optional[str] = None
+    sub_goal: Optional[str] = None
+    action_desc: Optional[str] = None
+    action_s: Optional[str] = None
+    summary: Optional[str] = None
+    progress: Optional[str] = None
+    memory: Optional[str] = None
+    reflaction_outcome: Optional[str] = None
+    reflaction_error: Optional[str] = None
 
 @dataclass
 class EpisodeData:
+    goal: str
     num_steps: int
     status: Optional[str] = None
     message: Optional[str] = None
     trajectory: Optional[List[StepData]] = None
-
