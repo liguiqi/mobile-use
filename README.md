@@ -49,6 +49,7 @@ In the [AndroidWorld](https://github.com/google-research/android_world) dynamic 
 ### 2. Enable developer mode and open USB debugging on your phone
 <img src="docs/assets/usb_debug_en.png" style="width:30%; height:auto;">
 
+For HyperOS or MIUI, you need to turn on USB Debugging (Security Settings) at the same time.
 
 ### 3. Connect your computer and phone using a USB cable. And verify the adb is connected.
 Run the `adb devices` (Windows: `adb.exe devices`) command on the command line terminal. If the device serial_no is listed, the connection is successful. The correct log is as follows:

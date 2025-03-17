@@ -52,6 +52,7 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 ### 2. 启用开发者模式并打开手机上的USB调试
 <img src="assets/usb_debug_zh.png" style="width:30%; height:auto;">
 
+对于 HyperOS 或 MIUI，你需要同时打开 "USB调试(安全设置)"。
 
 ### 3. 通过USB线连接电脑和手机，并验证 adb 是否已连接
 在命令行终端执行 `adb devices` （Windows：`adb.exe devices`）命令，如果列出设备号表示已连接成功，正确的日志如下：
