@@ -50,7 +50,7 @@ class MultiAgent(Agent):
             max_retry_vlm: int=3,
             retry_vlm_waiting_seconds: float=1.0,
             use_planner: bool=False,
-            use_reflector: bool=False,
+            use_reflector: bool=True,
             use_reflector_with_memory: bool=False,
             use_note_taker: bool=False,
             use_processor: bool=False,
