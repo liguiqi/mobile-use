@@ -49,11 +49,11 @@ class MultiAgent(Agent):
             reflection_action_waiting_seconds: float=1.0,
             max_retry_vlm: int=3,
             retry_vlm_waiting_seconds: float=1.0,
-            use_planner: bool=False,
+            use_planner: bool=True,
             use_reflector: bool=True,
-            use_reflector_with_memory: bool=False,
-            use_note_taker: bool=False,
-            use_processor: bool=False,
+            use_reflector_with_memory: bool=True,
+            use_note_taker: bool=True,
+            use_processor: bool=True,
         ):
         super().__init__(env=env, vlm=vlm, max_steps=max_steps)
         self.num_latest_screenshot = num_latest_screenshot
