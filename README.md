@@ -13,6 +13,11 @@ https://github.com/user-attachments/assets/c82ae51e-f0a2-4c7b-86e8-e3411d9749bb
 
 The user inputs the task description on the Web interface, and the Mobile Use automatically operates the mobile phone and completes the task.
 
+**⚠️Special Reminder**: The actions are autonomously decided by the agent, which may involve uncontrollable operational risks. It is recommended to stay alert to your phone's status during the experience. If any operational risks arise, please terminate the task immediately or use a test phone to avoid issues caused by misoperations.
+
+## 🎉 News
+- **[2025/03/17]**: Mobile Use now supports the **multi-agent** framework! Equipped with planning, reflection, memorization and progress mechanisms, Mobile Use achieves impressive performance on AndroidWorld!
+- **[2025/03/04]**: Mobile Use is released! We have also released v0.1.0 of mobile-use library, providing you an AI assistant for mobile - Any app, any task!
 
 ## 📊 Benchmark
 ![](docs/assets/benchmark.png)
