@@ -5,6 +5,8 @@ import json
 from mobile_use.scheme import *
 from mobile_use.utils import encode_image_url, smart_resize
 
+# Fix Picture sequence inconsistency problem in vllm0.7.2 
+# If you are using QwenAPI from 'dashscope.aliyuncs.com', replace IMAGE_PLACEHOLDER with ''
 IMAGE_PLACEHOLDER = '<|vision_start|><|image_pad|><|vision_end|>'
 
 ACTION_SPACE = ["key", "click", "left_click", "long_press", "swipe", "scroll", "type", "answer", "system_button", "open", "wait", "terminate"]
