@@ -7,7 +7,7 @@
 
 [ 中文 | [English](../README.md) ]
 
-https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
+https://github.com/user-attachments/assets/5c4d3ce8-0135-4e6e-b003-b20f81f834d4
 
 用户在 Web 界面输入自然语言指令，Mobile Use 的 GUI 智能体自动操作手机并完成任务。
 
@@ -117,6 +117,10 @@ https://github.com/user-attachments/assets/4c3d8800-78b7-4323-aad2-8338fe81cb81
 Case6：帮我去OPPO商城、京东、以及淘宝分别看一下oppofind n5售价是多少
 
 https://github.com/user-attachments/assets/84990487-f2a3-4921-a20e-fcdebfc8fc60
+
+Case7: Turn on Bluetooth and WIFI
+
+https://github.com/user-attachments/assets/c82ae51e-f0a2-4c7b-86e8-e3411d9749bb
 
 
 ## ⚙️ 高级用法
