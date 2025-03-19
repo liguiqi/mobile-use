@@ -166,12 +166,12 @@ class QwenWithSummaryAgent(Agent):
         else:
             return None
 
-    def _process_response(self, response, stream=False):
+    def _process_response(self, response):
         step_data = self.trajectory[-1]
         step_data.content = response.choices[0].message.content
         logger.info("Content from VLM:\n%s" % step_data.content)
 
-    def step(self, stream: bool=False):
+    def step(self) -> StepData:
         """Execute the task with maximum number of steps.
 
         Returns: Answer
@@ -226,8 +226,8 @@ class QwenWithSummaryAgent(Agent):
         ))
 
         step_data = self.trajectory[-1]
-        response = self.vlm.predict(self.messages, stream=stream)
-        self._process_response(response, stream=stream)
+        response = self.vlm.predict(self.messages)
+        self._process_response(response)
         counter = self.max_reflection_action
         reason, action = None, None
         while counter > 0:
@@ -254,7 +254,7 @@ Thought: The process of thinking.
                 }
                 self.messages[-1]['content'].append(msg)
                 response = self.vlm.predict(self.messages)
-                self._process_response(response, stream=stream)
+                self._process_response(response)
                 counter -= 1
 
         if action is None:
@@ -322,7 +322,7 @@ Thought: The process of thinking.
         return answer
 
 
-    def iter_run(self, input_content: str, stream: bool=False) -> Iterator[StepData]:
+    def iter_run(self, input_content: str) -> Iterator[StepData]:
         """Execute the agent with user input content.
 
         Returns: Iterator[StepData]
@@ -337,7 +337,7 @@ Thought: The process of thinking.
         for step_idx in range(self.curr_step_idx, self.max_steps):
             self.curr_step_idx = step_idx
             try:
-                self.step(stream=stream)
+                self.step()
                 yield self._get_curr_step_data()
             except Exception as e:
                 self.status = AgentStatus.FAILED
@@ -368,6 +368,6 @@ Thought: The process of thinking.
 
         Returns: EpisodeData
         """
-        for _ in self.iter_run(input_content, stream=False):
+        for _ in self.iter_run(input_content):
             pass
         return self.episode_data
