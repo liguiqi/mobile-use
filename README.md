@@ -64,10 +64,38 @@ a22d0110        device
 ```
 
 ### 4: Install mobile-use
+#### Option 1:  Install package directly (Recommended)
 With pip (Python>=3.10):
 ```
 pip install mobile-use
 ```
+
+#### Option 2:  Install from source code
+```
+```
+# Clone github repo
+git clone https://github.com/MadeAgents/mobile-use.git
+
+# Change directory into project directory
+cd mobile-use
+
+# Install uv if you don't have it already
+pip install uv
+
+# Create a virtual environment and install dependencies
+# We support using Python 3.10, 3.11, 3.12
+uv venv .venv --python=3.10
+
+# Activate the virtual environment
+# For macOS/Linux
+source .venv/bin/activate
+# For Windows
+.venv\Scripts\activate
+
+# Install mobile-use with all dependencies (pip >= 21.1)
+uv pip install -e .
+```
+
 
 ### 5. Launch the webui service
 ```
