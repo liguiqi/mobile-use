@@ -41,11 +41,16 @@ class Environment:
             self._d.keyevent("HOME")
 
     def get_state(self):
-        pixels = self._d.screenshot(error_ok=False)
+        try:
+            # 多个屏幕需要指定ID
+            pixels = self._d.screenshot(display_id=-1, error_ok=False)
+        except Exception as e:
+            logger.error(f"Failed to get screenshot: {e}.")
+            raise(e)
         package = self._d.app_current().package
         state = EnvState(pixels=pixels, package=package)
         return state
-    
+
     def execute_action(self, action: Action):
         answer = None
         if action.name == 'open_app' or action.name == 'open':
