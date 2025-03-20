@@ -73,7 +73,6 @@ pip install mobile-use
 
 #### Option 2: 从源码安装
 ```
-```
 # Clone github repo
 git clone https://github.com/MadeAgents/mobile-use.git
 
