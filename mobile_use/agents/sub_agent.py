@@ -504,3 +504,79 @@ class Processor(SubAgent):
     
     def parse_response(self, response: str):
         return response.split("### Completed contents ###")[-1].replace("\n", " ").replace("  ", " ").strip()
+
+
+class Evolutor(SubAgent):
+    def get_message(self, episodedata: EpisodeData) -> list:
+        messages = []
+        trajectory = episodedata.trajectory
+        last_step = trajectory[-1]
+
+        pixels = current_step.curr_env_state.pixels.copy()
+        resized_height, resized_width = smart_resize(height=pixels.height, width=pixels.width)
+
+        # Add system prompt
+        messages.append({
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "You are a helpful AI assistant specializing in mobile phone operations. Your goal is to reflect on past experiences and provide insights to improve future interactions."
+                }
+            ]
+        })
+
+        prompt = "### Current Task ###\n"
+        prompt += f"{episodedata.goal}\n\n"
+
+        if hasattr(last_step, "plan") and last_step.plan is not None:
+            prompt += "### Overall Plan ###\n"
+            prompt += f"{last_step.plan}\n\n"
+
+        if hasattr(last_step, "progress") and last_step.progress is not None:
+            prompt += "### Progress ###\n"
+            prompt += f"{last_step.progress}\n\n"
+    
+        prompt += "### Existing Tips from Past Experience ###\n"
+        if episodedata.input_tips is not None:
+            prompt += f"{episodedata.input_tips}\n\n"
+        else:
+            prompt += "No tips recorded.\n\n"
+
+        prompt += "### Full Action History ###\n"
+        if info_pool.action_history != []:
+            latest_actions = info_pool.action_history
+            latest_summary = info_pool.summary_history
+            action_outcomes = info_pool.action_outcomes
+            error_descriptions = info_pool.error_descriptions
+            progress_status_history = info_pool.progress_status_history
+            for act, summ, outcome, err_des, progress in zip(latest_actions, latest_summary, action_outcomes, error_descriptions, progress_status_history):
+                if outcome == "A":
+                    prompt += f"- Action: {act} | Description: {summ} | Outcome: Successful | Progress: {progress}\n"
+                else:
+                    prompt += f"- Action: {act} | Description: {summ} | Outcome: Failed | Feedback: {err_des}\n"
+            prompt += "\n"
+        else:
+            prompt += "No actions have been taken yet.\n\n"
+            
+        # if len(info_pool.future_tasks) > 0:
+        #     prompt += "---\n"
+        #     # if the setting provides future tasks explicitly
+        #     prompt += "### Future Tasks ###\n"
+        #     prompt += "Here are some tasks that you might be asked to do in the future:\n"
+        #     for task in info_pool.future_tasks:
+        #         prompt += f"- {task}\n"
+        #     prompt += "\n"
+
+        prompt += "---\n"
+        prompt += "Carefully reflect on the interaction history of the current task. Check if there are any general tips that might be useful for handling future tasks, such as advice on preventing certain common errors?\n\n"
+
+        prompt += "Provide your output in the following format:\n\n"
+
+        prompt += "### Updated Tips ###\n"
+        prompt += "If you have any important new tips to add (not already included in the existing tips), combine them with the current list. If there are no new tips, simply copy the existing tips here. Keep your tips concise and general.\n"
+        return prompt
+
+    def parse_response(self, response: str) -> dict:
+        updated_tips = response.split("### Updated Tips ###")[-1].replace("\n", " ").replace("  ", " ").strip()
+        return {"updated_tips": updated_tips}

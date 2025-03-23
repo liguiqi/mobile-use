@@ -53,6 +53,8 @@ class MultiAgent(Agent):
             use_reflector: bool=True,
             use_note_taker: bool=True,
             use_processor: bool=True,
+            use_evolutor: bool=False,
+            log_dir: str=None,
         ):
         super().__init__(env=env, vlm=vlm, max_steps=max_steps)
         self.num_latest_screenshot = num_latest_screenshot
@@ -61,11 +63,13 @@ class MultiAgent(Agent):
         self.reflection_action_waiting_seconds = reflection_action_waiting_seconds
         self.max_retry_vlm = max_retry_vlm
         self.retry_vlm_waiting_seconds = retry_vlm_waiting_seconds
+        self.log_dir = log_dir
 
         self.use_planner = use_planner
         self.use_reflector = use_reflector
         self.use_note_taker = use_note_taker
         self.use_processor = use_processor
+        self.use_evolutor = use_evolutor
 
         self.planner = Planner()
         self.operator = Operator()

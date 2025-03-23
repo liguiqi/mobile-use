@@ -1,7 +1,8 @@
 from PIL import Image
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
+from datetime import datetime
 
 from .action import ACTION_SPACE
 
@@ -105,3 +106,6 @@ class EpisodeData:
     status: Optional[str] = None
     message: Optional[str] = None
     trajectory: Optional[List[StepData]] = None
+    create_time: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    input_tips: Optional[str] = None
+    output_tips: Optional[str] = None
