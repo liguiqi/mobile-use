@@ -453,7 +453,7 @@ class Processor(SubAgent):
         if len(trajectory) > 1:
             prompt += "### History operations ###\n"
             prompt += "To complete the requirements of user\'s instruction, you have performed a series of operations. These operations are as follow:\n"
-            for i in range(len(trajectory) - 1):
+            for i in range(len(trajectory)):
                 step_list = []
                 step_list.append(f"Action: {trajectory[i].action_desc}")
                 step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
