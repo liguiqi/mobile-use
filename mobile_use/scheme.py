@@ -95,8 +95,8 @@ class StepData:
     summary: Optional[str] = None
     progress: Optional[str] = None
     memory: Optional[str] = None
-    reflaction_outcome: Optional[str] = None
-    reflaction_error: Optional[str] = None
+    reflection_outcome: Optional[str] = None
+    reflection_error: Optional[str] = None
 
 @dataclass
 class EpisodeData:

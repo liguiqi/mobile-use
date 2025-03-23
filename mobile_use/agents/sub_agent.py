@@ -185,12 +185,12 @@ You are provided with function signatures within <tools></tools> XML tags:
                 step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
                 if hasattr(trajectory[i], "summary") and trajectory[i].summary is not None:
                     step_list.append(f"Summary: {trajectory[i].summary}")
-                if hasattr(trajectory[i], "reflaction_outcome") and trajectory[i].reflaction_outcome is not None:
-                    if trajectory[i].reflaction_outcome == "A":
+                if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
+                    if trajectory[i].reflection_outcome == "A":
                         step_list.append("Successful")
                     else:
                         step_list.append("Failed")
-                        step_list.append(f"Feedback: {trajectory[i].reflaction_error}")
+                        step_list.append(f"Feedback: {trajectory[i].reflection_error}")
                 prompt += f"Step-{i+1}: {'; '.join(step_list)}\n"
             prompt += "\n"
         else:
@@ -208,9 +208,9 @@ You are provided with function signatures within <tools></tools> XML tags:
                 prompt += "During the operations, you record the following contents on the screenshot for use in subsequent operations:\n"
                 prompt += f"{previous_step.memory}\n\n"
 
-            if hasattr(previous_step, "reflaction_outcome") and previous_step.reflaction_outcome is not None and previous_step.reflaction_outcome != "A":
+            if hasattr(previous_step, "reflection_outcome") and previous_step.reflection_outcome is not None and previous_step.reflection_outcome != "A":
                 prompt += "### Latest operation ###\n"
-                prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflaction_error}\n You need to reflect and revise your operation this time."
+                prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflection_error}\n You need to reflect and revise your operation this time."
                 prompt += "\n\n"
 
         prompt += "### Observation ###\n"
@@ -538,12 +538,12 @@ class Processor(SubAgent):
                 step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
                 if hasattr(trajectory[i], "summary") and trajectory[i].summary is not None:
                     step_list.append(f"Summary: {trajectory[i].summary}")
-                if hasattr(trajectory[i], "reflaction_outcome") and trajectory[i].reflaction_outcome is not None:
-                    if trajectory[i].reflaction_outcome == "A":
+                if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
+                    if trajectory[i].reflection_outcome == "A":
                         step_list.append("Successful")
                     else:
                         step_list.append("Failed")
-                        step_list.append(f"Feedback: {trajectory[i].reflaction_error}")
+                        step_list.append(f"Feedback: {trajectory[i].reflection_error}")
                 prompt += f"Step-{i+1}: {'; '.join(step_list)}\n"
             prompt += "\n"
             

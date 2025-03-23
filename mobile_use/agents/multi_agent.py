@@ -127,6 +127,7 @@ class MultiAgent(Agent):
                 plan_thought, plan, current_subgoal = self.planner.parse_response(raw_plan)
                 logger.info("PLAN THOUGHT: %s" % plan_thought)
                 logger.info("PLAN: %s" % plan)
+                logger.info("CURRENT SUBGOAL: %s" % current_subgoal)
                 step_data.plan = plan
                 step_data.sub_goal = current_subgoal
             except Exception as e:
@@ -201,8 +202,8 @@ class MultiAgent(Agent):
                 if outcome in ['A', 'B', 'C']:
                     logger.info("Outcome: %s" % outcome)
                     logger.info("Error Description: %s" % error_description)
-                    step_data.reflaction_outcome = outcome
-                    step_data.reflaction_error = error_description
+                    step_data.reflection_outcome = outcome
+                    step_data.reflection_error = error_description
             except Exception as e:
                 logger.warning(f"Failed to parse the reflection. Error: {e}")
 
