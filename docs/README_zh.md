@@ -114,6 +114,16 @@ python -m mobile_use.webui
 
 在左下方的输入框输入任务描述，点击开始即可执行任务。
 
+### 7. 支持中文字符 (可选)
+
+如果你想在手机上输入中文字符，比如让 MobileUse 执行这样的命令：在美团app里搜索咖啡，你需要
+
+- Step 1. 下载 ADBKeyBoard apk, 点击 [这里](https://github.com/senzhk/ADBKeyBoard).
+- Step 2. 将 ADBKeyBoard 安装到你的手机里.
+  ```
+  adb install <path-to-ADBKeyboard.apk>
+  ```
+
 
 ## 🎉 More Demo
 Case1：Search the latest news of DeepSeek-R2 in Xiaohongshu APP and forward one of the news to the Weibo App
