@@ -113,6 +113,9 @@ Input task descriptions in the input box at the lower left corner, click start t
 
 ### 7. Support Chinese characters (Optional)
 
+If you want to input Chinese characters to your phone, for example, to let MobileUse execute a command like this: search for 
+"咖啡" in the Meituan app, you need
+
 - Step 1. Download ADBKeyBoard apk, click [here](https://github.com/senzhk/ADBKeyBoard).
 - Step 2. Install ADBKeyBoard to your phone.
   ```
