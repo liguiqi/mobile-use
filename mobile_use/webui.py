@@ -50,7 +50,7 @@ class Worker:
         env = Environment(**env)
         vlm = VLMWrapper(**vlm)
         self._images.clear()
-        self._agent = Agent.from_params({'type': 'ReAct', 'env': env, 'vlm': vlm, **agent})
+        self._agent = Agent.from_params({'env': env, 'vlm': vlm, **agent})
         i = 0
         name = re.sub(r'[^\w\u4e00-\u9fff\s-]', '', goal[:128])
         history_path = os.path.join(IMAGE_OUTPUT, name)
@@ -311,6 +311,13 @@ def build_agent_ui_demo():
                     with gr.Accordion("⚙️ Agent Settings", open=False):
                         with gr.Group():
                             with gr.Column():
+                                agent_type = gr.Dropdown(
+                                    label="Agent Name",
+                                    choices=['SingleAgent', 'MultiAgent'],
+                                    value='SingleAgent',
+                                    interactive=True,
+                                    info="Select a agent framework"
+                                )
                                 max_steps = gr.Slider(
                                     minimum=1,
                                     maximum=50,
@@ -338,6 +345,7 @@ def build_agent_ui_demo():
                                     label="Maximum Reflection Action",
                                     info="Maximum reflection action for per request",
                                 )
+                                add_params_component('agent', 'type', agent_type)
                                 add_params_component('agent', 'max_steps', max_steps)
                                 add_params_component('agent', 'num_latest_screenshot', num_latest_screenshot)
                                 add_params_component('agent', 'max_reflection_action', max_reflection_action)

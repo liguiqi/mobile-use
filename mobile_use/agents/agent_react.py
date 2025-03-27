@@ -124,6 +124,7 @@ def parse_reason_and_action(content: str, size: tuple[float, float], raw_size: t
     return reason_s, action_a, action_r
 
 
+@Agent.register('SingleAgent')
 @Agent.register('ReAct')
 class ReActAgent(Agent):
     def __init__(
