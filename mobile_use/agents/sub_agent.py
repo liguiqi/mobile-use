@@ -185,12 +185,12 @@ You are provided with function signatures within <tools></tools> XML tags:
                 step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
                 if hasattr(trajectory[i], "summary") and trajectory[i].summary is not None:
                     step_list.append(f"Summary: {trajectory[i].summary}")
-                if hasattr(trajectory[i], "reflaction_outcome") and trajectory[i].reflaction_outcome is not None:
-                    if trajectory[i].reflaction_outcome == "A":
+                if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
+                    if trajectory[i].reflection_outcome == "A":
                         step_list.append("Successful")
                     else:
                         step_list.append("Failed")
-                        step_list.append(f"Feedback: {trajectory[i].reflaction_error}")
+                        step_list.append(f"Feedback: {trajectory[i].reflection_error}")
                 prompt += f"Step-{i+1}: {'; '.join(step_list)}\n"
             prompt += "\n"
         else:
@@ -208,9 +208,9 @@ You are provided with function signatures within <tools></tools> XML tags:
                 prompt += "During the operations, you record the following contents on the screenshot for use in subsequent operations:\n"
                 prompt += f"{previous_step.memory}\n\n"
 
-            if hasattr(previous_step, "reflaction_outcome") and previous_step.reflaction_outcome is not None and previous_step.reflaction_outcome != "A":
+            if hasattr(previous_step, "reflection_outcome") and previous_step.reflection_outcome is not None and previous_step.reflection_outcome != "A":
                 prompt += "### Latest operation ###\n"
-                prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflaction_error}\n You need to reflect and revise your operation this time."
+                prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflection_error}\n You need to reflect and revise your operation this time."
                 prompt += "\n\n"
 
         prompt += "### Observation ###\n"
@@ -356,85 +356,6 @@ class Reflector(SubAgent):
         return outcome, error_description
 
 
-class ReflectorWithMemory(SubAgent):
-    def get_message(self, episodedata: EpisodeData) -> list:
-        messages = []
-        trajectory = episodedata.trajectory
-        current_step = trajectory[-1]
-
-        pixels_before = current_step.curr_env_state.pixels.copy()
-        resized_height, resized_width = smart_resize(height=pixels_before.height, width=pixels_before.width)
-        pixels_after = current_step.exec_env_state.pixels.copy()
-        
-        # Add system prompt
-        messages.append({
-            "role": "system",
-            "content": [
-                {
-                    "type": "text",
-                    "text": "You are a helpful AI assistant for operating mobile phones. Your goal is to verify whether the latest action produced the expected behavior and update the memory for future actions."
-                }
-            ]
-        })
-
-        # Add user prompt
-        prompt = "### User Instruction ###\n"
-        prompt += f"{episodedata.goal}\n\n"
-
-        if hasattr(current_step, "sub_goal") and current_step.sub_goal is not None:
-            prompt += "### Current Subgoal ###\n"
-            prompt += f"{current_step.sub_goal}\n\n"
-        
-        prompt += "### Memory ###\n"
-        prompt += f"{current_step.memory}\n\n"
-
-        prompt += "---\n"
-        prompt += f"Screenshot before latest action: {IMAGE_PLACEHOLDER}\n"
-        prompt += f"Screenshot after latest action: {IMAGE_PLACEHOLDER}\n"
-        prompt += f"The two images are two phone screenshots before and after your latest action. " 
-        prompt += f"The width and height are {resized_width} and {resized_height} pixels, respectively.\n\n"
-
-        prompt += "---\n"
-        prompt += "### Latest Action ###\n"
-        prompt += f"Action: {current_step.action_s}\n"
-        prompt += f"Expectation: {current_step.action_desc}\n\n"
-
-        prompt += "---\n"
-        prompt += "Carefully examine the information provided above to determine whether the last action produced the expected behavior. If the action was successful, update the memory for future use. If the action failed, identify the failure mode and provide reasoning on the potential reason causing this failure. Note that for the “Swipe” action, it may take multiple attempts to display the expected content. Thus, for a \"Swipe\" action, if the screen shows new content, it usually meets the expectation.\n\n"
-
-        prompt += "Provide your output in the following format containing three parts:\n\n"
-        prompt += "### Outcome ###\n"
-        prompt += "Choose from the following options. Give your answer as \"A\", \"B\" or \"C\":\n"
-        prompt += "A: Successful or Partially Successful. The result of the last action meets the expectation.\n"
-        prompt += "B: Failed. The last action results in a wrong page. I need to return to the previous state.\n"
-        prompt += "C: Failed. The last action produces no changes.\n\n"
-
-        prompt += "### Error Description ###\n"
-        prompt += "If the action failed, provide a detailed description of the error and the potential reason causing this failure. If the action succeeded, put \"None\" here.\n\n"
-
-        prompt += "### New Memory ###\n"
-        prompt += "If the action was successful or partially successful, update the memory. If the action failed, copy the previous memory.\n"
-        prompt += "Note: Do not include low-level actions! Do not include any plans! Do not include any progress! Do not take notes on status! The information you record is usually some important numbers or texts displayed on the screen and will be used in future operations.\n"
-
-
-        messages.append({
-            "role": "user",
-            "content": [
-                {"type": "text","text": prompt},
-                {"type": "image_url","image_url": {"url": encode_image_url(pixels_before)}},
-                {"type": "image_url","image_url": {"url": encode_image_url(pixels_after)}}
-            ]
-        })
-
-        return messages
-
-    def parse_response(self, response: str) -> dict:
-        outcome = response.split("### Outcome ###")[-1].split("### Error Description ###")[0].replace("\n", " ").replace("  ", " ").strip()
-        error_description = response.split("### Error Description ###")[-1].split("### New Memory ###")[0].replace("\n", " ").replace("  ", " ").strip()
-        memory = response.split("### New Memory ###")[-1].replace("\n", " ").replace("  ", " ").strip()
-        return outcome, error_description, memory
-
-
 """
 Gemerate memory
 """
@@ -532,18 +453,18 @@ class Processor(SubAgent):
         if len(trajectory) > 1:
             prompt += "### History operations ###\n"
             prompt += "To complete the requirements of user\'s instruction, you have performed a series of operations. These operations are as follow:\n"
-            for i in range(len(trajectory) - 1):
+            for i in range(len(trajectory)):
                 step_list = []
                 step_list.append(f"Action: {trajectory[i].action_desc}")
                 step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
                 if hasattr(trajectory[i], "summary") and trajectory[i].summary is not None:
                     step_list.append(f"Summary: {trajectory[i].summary}")
-                if hasattr(trajectory[i], "reflaction_outcome") and trajectory[i].reflaction_outcome is not None:
-                    if trajectory[i].reflaction_outcome == "A":
+                if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
+                    if trajectory[i].reflection_outcome == "A":
                         step_list.append("Successful")
                     else:
                         step_list.append("Failed")
-                        step_list.append(f"Feedback: {trajectory[i].reflaction_error}")
+                        step_list.append(f"Feedback: {trajectory[i].reflection_error}")
                 prompt += f"Step-{i+1}: {'; '.join(step_list)}\n"
             prompt += "\n"
             

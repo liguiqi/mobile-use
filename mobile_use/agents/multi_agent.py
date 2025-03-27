@@ -9,7 +9,7 @@ from mobile_use.vlm import VLMWrapper
 from mobile_use.utils import encode_image_url, smart_resize
 from mobile_use.agents import Agent
 
-from mobile_use.agents.sub_agent import Planner, Operator, Reflector, ReflectorWithMemory, NoteTaker, Processor
+from mobile_use.agents.sub_agent import Planner, Operator, Reflector, NoteTaker, Processor
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,6 @@ class MultiAgent(Agent):
             retry_vlm_waiting_seconds: float=1.0,
             use_planner: bool=True,
             use_reflector: bool=True,
-            use_reflector_with_memory: bool=True,
             use_note_taker: bool=True,
             use_processor: bool=True,
         ):
@@ -65,14 +64,12 @@ class MultiAgent(Agent):
 
         self.use_planner = use_planner
         self.use_reflector = use_reflector
-        self.use_reflector_with_memory = use_reflector_with_memory
         self.use_note_taker = use_note_taker
         self.use_processor = use_processor
 
         self.planner = Planner()
         self.operator = Operator()
         self.reflector = Reflector()
-        self.reflector_with_memory = ReflectorWithMemory()
         self.note_taker = NoteTaker()
         self.processor = Processor()
 
@@ -83,7 +80,6 @@ class MultiAgent(Agent):
         self.planner = Planner()
         self.operator = Operator()
         self.reflector = Reflector()
-        self.reflector_with_memory = ReflectorWithMemory()
         self.note_taker = NoteTaker()
         self.processor = Processor()
 
@@ -127,6 +123,7 @@ class MultiAgent(Agent):
                 plan_thought, plan, current_subgoal = self.planner.parse_response(raw_plan)
                 logger.info("PLAN THOUGHT: %s" % plan_thought)
                 logger.info("PLAN: %s" % plan)
+                logger.info("CURRENT SUBGOAL: %s" % current_subgoal)
                 step_data.plan = plan
                 step_data.sub_goal = current_subgoal
             except Exception as e:
@@ -201,8 +198,8 @@ class MultiAgent(Agent):
                 if outcome in ['A', 'B', 'C']:
                     logger.info("Outcome: %s" % outcome)
                     logger.info("Error Description: %s" % error_description)
-                    step_data.reflaction_outcome = outcome
-                    step_data.reflaction_error = error_description
+                    step_data.reflection_outcome = outcome
+                    step_data.reflection_error = error_description
             except Exception as e:
                 logger.warning(f"Failed to parse the reflection. Error: {e}")
 

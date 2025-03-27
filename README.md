@@ -13,7 +13,6 @@ https://github.com/user-attachments/assets/5c4d3ce8-0135-4e6e-b003-b20f81f834d4
 
 The user inputs the task description on the Web interface, and the Mobile Use automatically operates the mobile phone and completes the task.
 
-**⚠️Special Reminder**: The actions are autonomously decided by the agent, which may involve uncontrollable operational risks. It is recommended to stay alert to your phone's status during the experience. If any operational risks arise, please terminate the task immediately or use a test phone to avoid issues caused by misoperations.
 
 ## 🎉 News
 - **[2025/03/17]**: Mobile Use now supports the [**multi-agent**](mobile_use/agents/multi_agent.py) framework! Equipped with planning, reflection, memorization and progress mechanisms, Mobile Use achieves impressive performance on AndroidWorld!
@@ -33,7 +32,7 @@ In the [AndroidWorld](https://github.com/google-research/android_world) dynamic 
 `mobile-use` requires [ADB](https://developer.android.com/tools/adb) to control the phone, which necessitates the prior installation of the relevant tools and connecting the phone to the computer via USB.
 
 ### 1. Install SDK Platform-Tools
-- Step 1. Download SDK Platform-Tools for Desktop, click [there](https://developer.android.com/tools/releases/platform-tools#downloads).
+- Step 1. Download SDK Platform-Tools for Desktop, click [here](https://developer.android.com/tools/releases/platform-tools#downloads).
 - Step 2. Unzip the downloaded file and add the platform-tools path to the environment variables.
 
     - Windows
@@ -111,6 +110,17 @@ Click VLM Configuration to set the Base URL and API Key of the multimodal large 
 ![alt text](docs/assets/vlm_configuration.png)
 
 Input task descriptions in the input box at the lower left corner, click start to execute tasks.
+
+### 7. Support Chinese characters (Optional)
+
+If you want to input Chinese characters to your phone, for example, to let MobileUse execute a command like this: search for 
+"咖啡" in the Meituan app, you need
+
+- Step 1. Download ADBKeyBoard apk, click [here](https://github.com/senzhk/ADBKeyBoard).
+- Step 2. Install ADBKeyBoard to your phone.
+  ```
+  adb install <path-to-ADBKeyboard.apk>
+  ```
 
 **⚠️ Special Reminder**: The actions are autonomously decided by the intelligent agent, which may pose uncontrollable operational risks. It is recommended that during the experience, you constantly monitor your phone's status. If you encounter any operational risks, promptly terminate the task or use a test phone for the experience to avoid issues caused by accidental operations.
 
