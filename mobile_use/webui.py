@@ -69,15 +69,24 @@ class Worker:
             if step_data.curr_env_state is not None:
                 r = 20
                 if step_data.action:
+                    logger.info(f'step_data action: {step_data.action}')
                     image = step_data.curr_env_state.pixels.copy()
                     draw = ImageDraw.Draw(image)
                     if step_data.action.name == 'click':
-                        x, y = step_data.action.parameters['point']
+                        if 'coordinate' in step_data.action.parameters:       # QwenAgent
+                            x, y = step_data.action.parameters['coordinate']
+                        else:
+                            x, y = step_data.action.parameters['point']
                         draw.ellipse([x-r, y-r, x+r, y+r], fill=(255, 0, 0), outline='black', width=2)
                     elif step_data.action.name == 'scroll':
                         x, y = step_data.action.parameters['start_point']
                         draw.ellipse([x-r, y-r, x+r, y+r], fill=(255, 0, 0), outline='black', width=2)
                         x, y = step_data.action.parameters['end_point']
+                        draw.ellipse([x-r, y-r, x+r, y+r], fill=(255, 0, 0), outline='black', width=2)
+                    elif step_data.action.name == 'swipe':       # QwenAgent
+                        x, y = step_data.action.parameters['coordinate']
+                        draw.ellipse([x-r, y-r, x+r, y+r], fill=(255, 0, 0), outline='black', width=2)
+                        x, y = step_data.action.parameters['coordinate2']
                         draw.ellipse([x-r, y-r, x+r, y+r], fill=(255, 0, 0), outline='black', width=2)
                     draw.text((200, 10), f"Step {step_data.step_idx}", font=ImageFont.load_default().font_variant(size=30), fill=(255, 0, 0))
                 else:
@@ -187,19 +196,23 @@ def run_agent(request: gr.Request, input_content, messages, image, *args):
             yield [messages, image] + get_button_state(True, False, True)
             return
 
-    show_image = image
-    step_idx = -1
-    for msg in worker.run(input_content):
-        img_file = msg.get('img_file')
-        if img_file:
-            show_image = os.path.join(worker._history_path, img_file)
-        if step_idx != worker._agent.curr_step_idx:
-            step_idx = worker._agent.curr_step_idx
-            messages.append(ChatMessage(role="assistant", content=msg["text"]))
-        else:
-            messages[-1].content = msg["text"]
-        yield [messages, show_image] + get_button_state(False, True, False)
-    yield [messages, show_image] + get_button_state(True, False, True, stop_value='⏹️ Stop')
+    try:
+        show_image = image
+        step_idx = -1
+        for msg in worker.run(input_content):
+            img_file = msg.get('img_file')
+            if img_file:
+                show_image = os.path.join(worker._history_path, img_file)
+            if step_idx != worker._agent.curr_step_idx:
+                step_idx = worker._agent.curr_step_idx
+                messages.append(ChatMessage(role="assistant", content=msg["text"]))
+            else:
+                messages[-1].content = msg["text"]
+            yield [messages, show_image] + get_button_state(False, True, False)
+        yield [messages, show_image] + get_button_state(True, False, True, stop_value='⏹️ Stop')
+    except Exception as e:
+        logger.error(e)
+        gr.Info('系统异常')
 
     # save the history
     messages_dict = []
