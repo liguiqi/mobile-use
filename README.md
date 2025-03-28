@@ -15,7 +15,8 @@ The user inputs the task description on the Web interface, and the Mobile Use au
 
 
 ## 🎉 News
-- **[2025/03/17]**: Mobile Use now supports the [**multi-agent**](mobile_use/agents/multi_agent.py) framework! Equipped with planning, reflection, memorization and progress mechanisms, Mobile Use achieves impressive performance on AndroidWorld!
+- **[2025/03/28]**: The [document](docs/AndroidWorld.md) for running Mobile Use in the AndroidWorld dynamic environment now is released!
+- **[2025/03/17]**: Mobile Use now supports the [multi-agent](mobile_use/agents/multi_agent.py) framework! Equipped with planning, reflection, memorization and progress mechanisms, Mobile Use achieves impressive performance on AndroidWorld!
 - **[2025/03/04]**: Mobile Use is released! We have also released v0.1.0 of [mobile-use](https://github.com/MadeAgents/mobile-use) library, providing you an AI assistant for mobile - Any app, any task!
 
 ## 📊 Benchmark
@@ -217,10 +218,13 @@ while going:
 ```
 
 
+### Running Mobile Use in AndoirdWorld
+See [AndroidWorld.md](docs/AndroidWorld.md).
+
 ## 🗺️ Roadmap
 - [x] Improve agent memory and reflection (summarize, compress.)
 - [x] Provide multi-agent implementation 
-- [ ] Provide an evaluation process about AndroidWorld dynamic environment 
+- [x] Provide an evaluation process about AndroidWorld dynamic environment 
 - [ ] Develop an APP that can be installed directly on the phone
 
 
