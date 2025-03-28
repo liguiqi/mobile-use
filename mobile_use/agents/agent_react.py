@@ -298,6 +298,12 @@ class ReActAgent(Agent):
         for step_idx in range(self.curr_step_idx, self.max_steps):
             self.curr_step_idx = step_idx
             try:
+                # show current environment
+                yield StepData(
+                    step_idx=self.curr_step_idx,
+                    curr_env_state=self.env.get_state(),
+                    vlm_call_history=[]
+                )
                 self.step()
                 yield self._get_curr_step_data()
             except Exception as e:
