@@ -136,7 +136,6 @@ class MultiAgent(Agent):
             show_message(operator_messages, "Operator")
         response = self.vlm.predict(operator_messages, stop=['Summary'])
 
-        reason, action = None, None
         for counter in range(self.max_reflection_action):
             try:
                 raw_action = response.choices[0].message.content
