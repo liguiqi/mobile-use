@@ -8,10 +8,10 @@ import io
 from mobile_use.scheme import *
 from mobile_use.environ import Environment
 from mobile_use.vlm import VLMWrapper
-from mobile_use.utils import encode_image_url, smart_resize
+from mobile_use.utils import encode_image_url, smart_resize, remove_img_placeholder
 from mobile_use.agents import Agent
 
-from mobile_use.agents.sub_agent import *
+from mobile_use.agents.sub_agent import Planner, UITARSOperator, Reflector, NoteTaker, Processor, Evolutor
 
 
 logger = logging.getLogger(__name__)
@@ -27,10 +27,10 @@ The (overall) user query is: {goal}
 Now you have finished the task. I want you to provide an answer to the user query.
 Answer with the following format:
 
-## Format
-<tool_call>
-{{"name": "mobile_use", "arguments": {{"action": "answer", "text": <your-answer>}}}}
-</tool_call>"""
+## Output Format
+```\nThought: ...
+Action: answer(content='') ## Put you answer in the `content` parameter.\n```
+"""
 
 def show_message(messages: List[dict], name: str = None):
     name = f"{name} " if name is not None else ""
@@ -84,8 +84,8 @@ def recover_tips(log_dir: str):
     logger.info(f"Load the initial tips since no valid tips are found in the log directory {log_dir}.")
     return INIT_TIPS
 
-@Agent.register('MultiAgent')
-class MultiAgent(Agent):
+@Agent.register('UITARSAgent')
+class UITARSAgent(Agent):
     def __init__(
             self, 
             env: Environment,
@@ -99,7 +99,6 @@ class MultiAgent(Agent):
             retry_vlm_waiting_seconds: float=1.0,
             use_planner: bool=False,
             use_reflector: bool=False,
-            use_long_reflector: bool=False,
             use_note_taker: bool=False,
             use_processor: bool=False,
             use_evolutor: bool=False,
@@ -116,15 +115,17 @@ class MultiAgent(Agent):
 
         self.use_planner = use_planner
         self.use_reflector = use_reflector
-        self.use_long_reflector = use_long_reflector
         self.use_note_taker = use_note_taker
         self.use_processor = use_processor
         self.use_evolutor = use_evolutor
 
+        self.enable_multi_model = False
+        if self.use_planner or self.use_reflector or self.use_note_taker or self.use_processor or self.use_evolutor:
+            self.enable_multi_model = True
+
         self.planner = Planner()
-        self.operator = Operator()
+        self.operator = UITARSOperator(enable_multi_model=self.enable_multi_model)
         self.reflector = Reflector()
-        self.long_reflector = LongReflector()
         self.note_taker = NoteTaker()
         self.processor = Processor()
         self.evolutor = Evolutor()
@@ -136,9 +137,8 @@ class MultiAgent(Agent):
         """
         self._init_data(goal=goal)
         self.planner = Planner()
-        self.operator = Operator()
+        self.operator = UITARSOperator(enable_multi_model=self.enable_multi_model)
         self.reflector = Reflector()
-        self.long_reflector = LongReflector()
         self.note_taker = NoteTaker()
         self.processor = Processor()
         self.evolutor = Evolutor()
@@ -155,6 +155,8 @@ class MultiAgent(Agent):
         Returns: Answer
         """
         logger.info("Step %d ... ..." % self.curr_step_idx)
+        if self.curr_step_idx >= 80:
+            raise Exception("The agent has performed too many steps. Stop to avoid OOM ERROR.")
         answer = None
         show_step = [0,3]
 
@@ -176,6 +178,7 @@ class MultiAgent(Agent):
         # Call planner
         if self.use_planner:
             plan_messages = self.planner.get_message(self.episode_data)
+            plan_messages = remove_img_placeholder(plan_messages)
             if self.curr_step_idx in show_step:
                 show_message(plan_messages, "Planner")
             response = self.vlm.predict(plan_messages)
@@ -192,7 +195,7 @@ class MultiAgent(Agent):
                 logger.warning(f"Failed to parse the plan. Error: {e}")
 
         # Call Operator
-        action_thought, action, action_s, action_desc = None, None, None, None
+        action_thought, action, action_s = None, None, None
         operator_messages = self.operator.get_message(self.episode_data)
         if self.curr_step_idx in show_step:
             show_message(operator_messages, "Operator")
@@ -204,10 +207,9 @@ class MultiAgent(Agent):
                 logger.info("Action from VLM:\n%s" % raw_action)
                 step_data.content = raw_action
                 resized_size = (resized_width, resized_height)
-                action_thought, action, action_s, action_desc = self.operator.parse_response(raw_action, resized_size, pixels.size)
+                action_thought, action, action_s = self.operator.parse_response(raw_action, resized_size, pixels.size)
                 logger.info("ACTION THOUGHT: %s" % action_thought)
                 logger.info("ACTION: %s" % str(action))
-                logger.info("ACTION DESCRIPTION: %s" % action_desc)
                 break
             except Exception as e:
                 logger.warning(f"Failed to parse the action. Error is {e.args}")
@@ -223,13 +225,10 @@ class MultiAgent(Agent):
         if action is None:
             logger.warning("Action parse error after max retry.")
         else:
-            if action.name == 'terminate':
-                if action.parameters['status'] == 'success':
-                    logger.info(f"Finished: {action}")
-                    self.status = AgentStatus.FINISHED
-                elif action.parameters['status'] == 'failure':
-                    logger.info(f"Failed: {action}")
-                    self.status = AgentStatus.FAILED
+            if action.name == 'finished':
+                logger.info(f"Finished: {action}")
+                self.status = AgentStatus.FINISHED
+                answer = action.parameters.get('content', None)
             else:
                 logger.info(f"Execute the action: {action}")
                 try:
@@ -240,7 +239,7 @@ class MultiAgent(Agent):
         
         if action is not None:
             step_data.thought = action_thought
-            step_data.action_desc = action_desc
+            step_data.action_desc = action_thought
             step_data.action_s = action_s
             step_data.action = action
 
@@ -249,6 +248,7 @@ class MultiAgent(Agent):
         # Call Reflector
         if self.use_reflector:
             reflection_messages = self.reflector.get_message(self.episode_data)
+            reflection_messages = remove_img_placeholder(reflection_messages)
             if self.curr_step_idx in show_step:
                 show_message(reflection_messages, "Reflector")
             response = self.vlm.predict(reflection_messages)
@@ -264,28 +264,10 @@ class MultiAgent(Agent):
             except Exception as e:
                 logger.warning(f"Failed to parse the reflection. Error: {e}")
 
-        # Call LongReflector
-        if self.use_long_reflector:
-            long_reflection_messages = self.long_reflector.get_message(self.episode_data)
-            if long_reflection_messages is not None:
-                if self.curr_step_idx in show_step:
-                    show_message(long_reflection_messages, "LongReflector")
-                response = self.vlm.predict(long_reflection_messages)
-                try:
-                    content = response.choices[0].message.content
-                    logger.info("Long Reflection from VLM:\n%s" % content)
-                    outcome, error_description = self.long_reflector.parse_response(content)
-                    if outcome in ['A', 'B']:
-                        logger.info("Long Outcome: %s" % outcome)
-                        logger.info("Long Error Description: %s" % error_description)
-                        step_data.long_reflection_outcome = outcome
-                        step_data.long_reflection_error = error_description
-                except Exception as e:
-                    logger.warning(f"Failed to parse the long reflection. Error: {e}")
-
         # Call NoteTaker
         if self.use_note_taker:
             note_messages = self.note_taker.get_message(self.episode_data)
+            note_messages = remove_img_placeholder(note_messages)
             if self.curr_step_idx in show_step:
                 show_message(note_messages, "NoteTaker")
             response = self.vlm.predict(note_messages)
@@ -301,6 +283,7 @@ class MultiAgent(Agent):
         # Call Processor
         if self.use_processor:
             processor_messages = self.processor.get_message(self.episode_data)
+            processor_messages = remove_img_placeholder(processor_messages)
             if self.curr_step_idx in show_step:
                 show_message(processor_messages, "Processor")
             response = self.vlm.predict(processor_messages)
@@ -314,26 +297,28 @@ class MultiAgent(Agent):
                 logger.warning(f"Failed to parse the progress. Error: {e}")
 
         if self.status == AgentStatus.FINISHED:
-            # Answer
-            msg = {
-                'type': 'text', 'text': ANSWER_PROMPT_TEMPLATE.format(goal=self.goal)
-            }
-            operator_messages[-1]['content'].append(msg)
-            show_message(operator_messages, "Answer")
-            response = self.vlm.predict(operator_messages)
-            try:
-                content = response.choices[0].message.content
-                logger.info("Answer from VLM:\n%s" % content)
-                _, answer, _, _ = self.operator.parse_response(content, resized_size, pixels.size)
-                answer = answer.parameters['text']
-                step_data.answer = answer
-                logger.info("Answer: %s" % answer)
-            except Exception as e:
-                logger.warning(f"Failed to get the answer. Error: {e}")
-            
+            if answer is None:
+                # Answer
+                msg = {
+                    'type': 'text', 'text': ANSWER_PROMPT_TEMPLATE.format(goal=self.goal)
+                }
+                operator_messages[-1]['content'].append(msg)
+                show_message(operator_messages, "Answer")
+                response = self.vlm.predict(operator_messages)
+                try:
+                    content = response.choices[0].message.content
+                    logger.info("Answer from VLM:\n%s" % content)
+                    _, answer, _ = self.operator.parse_response(content, resized_size, pixels.size)
+                    answer = answer.parameters.get('content', None)
+                    step_data.answer = answer
+                    logger.info("Answer: %s" % answer)
+                except Exception as e:
+                    logger.warning(f"Failed to get the answer. Error: {e}")
+
             # Evolutor
             if self.use_evolutor:
                 evolutor_messages = self.evolutor.get_message(self.episode_data)
+                evolutor_messages = remove_img_placeholder(evolutor_messages)
                 show_message(evolutor_messages, "Evolutor")
                 response = self.vlm.predict(evolutor_messages)
                 try:

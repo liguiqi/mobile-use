@@ -3,6 +3,8 @@ import base64
 from io import BytesIO
 from PIL import Image
 from typing import Tuple, Union, List
+import numpy as np
+from skimage.metrics import structural_similarity as ssim
 
 
 def encode_image_url(image: Image.Image, resize: Union[Tuple, List]=None) -> str:
@@ -47,3 +49,57 @@ def smart_resize(
         h_bar = math.ceil(height * beta / factor) * factor
         w_bar = math.ceil(width * beta / factor) * factor
     return h_bar, w_bar
+
+IMAGE_PLACEHOLDER = '<|vision_start|><|image_pad|><|vision_end|>'
+
+def remove_img_placeholder(messages, num_latest_screenshot=None):
+    # find all image content
+    img_contents = []
+    for msg in messages:
+        for content in msg['content']:
+            if "image" in content['type']:
+                img_contents.append(content)
+    start_idx = 0
+    if num_latest_screenshot is not None:
+        start_idx = max(0, len(img_contents) - num_latest_screenshot)
+    
+    img_idx = 0
+    new_msgs = []
+    for msg in messages:
+        role = msg['role']
+        new_contents = []
+        for content in msg['content']:
+            if "image" in content['type']:
+                continue
+            text = content['text'].split(IMAGE_PLACEHOLDER)
+            if len(text) == 1:
+                new_contents.append(content)
+            else:
+                for i, t in enumerate(text):
+                    if t:
+                        new_contents.append({'type': 'text','text': t})
+                    if i < len(text) - 1:
+                        if img_idx >= len(img_contents):
+                            raise ValueError("Image content not match.")
+                        if img_idx >= start_idx:
+                            new_contents.append(img_contents[img_idx])
+                        img_idx += 1
+        if len(new_contents) > 0:
+            new_msgs.append({'role': role, 'content': new_contents})
+    assert img_idx == len(img_contents)
+    return new_msgs
+
+def compare_image(img1: Image.Image, img2: Image.Image):
+    img1 = img1.convert('L')
+    img2 = img2.convert('L')
+    img1 = np.array(img1)
+    img2 = np.array(img2)
+    ssim_value = ssim(img1, img2)
+    return ssim_value
+
+def is_same_image(img1: Image.Image, img2: Image.Image):
+    img1 = img1.convert('L')
+    img2 = img2.convert('L')
+    img1 = np.array(img1)
+    img2 = np.array(img2)
+    return np.array_equal(img1, img2)

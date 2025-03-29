@@ -3,13 +3,35 @@ import re
 import json
 
 from mobile_use.scheme import *
-from mobile_use.utils import encode_image_url, smart_resize
+from mobile_use.utils import encode_image_url, smart_resize, remove_img_placeholder, is_same_image
+
+__all__ = ['Planner', 'Operator', 'Reflector', 'LongReflector', 'NoteTaker', 'Processor', 'Evaluator', 'Evolutor', 'UITARSOperator']
+
 
 # Fix Picture sequence inconsistency problem in vllm0.7.2 
 # If you are using QwenAPI from 'dashscope.aliyuncs.com', replace IMAGE_PLACEHOLDER with ''
 IMAGE_PLACEHOLDER = '<|vision_start|><|image_pad|><|vision_end|>'
 
 ACTION_SPACE = ["key", "click", "left_click", "long_press", "swipe", "scroll", "type", "answer", "system_button", "open", "wait", "terminate"]
+
+
+def get_history(trajectory, num_histories=None):
+    start_idx = 0 if num_histories is None else max(0, len(trajectory) - num_histories)
+    history = []
+    for i in range(start_idx, len(trajectory)):
+        step_list = []
+        step_list.append(f"Action: {trajectory[i].action_desc}")
+        step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
+        if hasattr(trajectory[i], "summary") and trajectory[i].summary is not None:
+            step_list.append(f"Summary: {trajectory[i].summary}")
+        if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
+            if trajectory[i].reflection_outcome == "A":
+                step_list.append("Successful")
+            else:
+                step_list.append("Failed")
+                step_list.append(f"Feedback: {trajectory[i].reflection_error}")
+        history.append(f"Step-{i+1}: {'; '.join(step_list)}")
+    return history
 
 
 class SubAgent(ABC):
@@ -96,7 +118,7 @@ class Planner(SubAgent):
             "role": "user",
             "content": [
                 {"type": "text","text": prompt},
-                {"type": "image_url","image_url": {"url": encode_image_url(pixels)}}
+                {"type": "image_url","image_url": {"url": encode_image_url(pixels)}, "resized_height": resized_height, "resized_width": resized_width}
             ]
         })
 
@@ -178,20 +200,8 @@ You are provided with function signatures within <tools></tools> XML tags:
         prompt += "### Latest History Operations ###\n"
         prompt += "You have done the following operation on the current device):\n"
         if len(trajectory) > 1 and (self.num_histories is None or self.num_histories > 0):
-            start_idx = 0 if self.num_histories is None else max(0, len(trajectory) - 1 - self.num_histories)
-            for i in range(start_idx, len(trajectory) - 1):
-                step_list = []
-                step_list.append(f"Action: {trajectory[i].action_desc}")
-                step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
-                if hasattr(trajectory[i], "summary") and trajectory[i].summary is not None:
-                    step_list.append(f"Summary: {trajectory[i].summary}")
-                if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
-                    if trajectory[i].reflection_outcome == "A":
-                        step_list.append("Successful")
-                    else:
-                        step_list.append("Failed")
-                        step_list.append(f"Feedback: {trajectory[i].reflection_error}")
-                prompt += f"Step-{i+1}: {'; '.join(step_list)}\n"
+            history = get_history(trajectory[:-1], self.num_histories)
+            prompt += "\n".join(history)
             prompt += "\n"
         else:
             prompt += "No actions have been taken yet.\n\n"
@@ -212,19 +222,30 @@ You are provided with function signatures within <tools></tools> XML tags:
                 prompt += "### Latest operation ###\n"
                 prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflection_error}\n You need to reflect and revise your operation this time."
                 prompt += "\n\n"
+            
+            if hasattr(previous_step, "long_reflection_outcome") and previous_step.long_reflection_outcome is not None and previous_step.long_reflection_outcome != "A":
+                prompt += "### Reflection ###\n"
+                prompt += "According to your history operations, you have the following reflection:\n"
+                prompt += f"Reflection: {previous_step.long_reflection_error}\n"
+                prompt += "You need to reflect, reschedule, and revise your operation this time. Try to avoid the same mistake."
+                prompt += "\n\n"
 
         prompt += "### Observation ###\n"
         prompt += f"This is the current screenshot of the phone. The screen's resolution is {resized_width}x{resized_height}."
         prompt += f"{IMAGE_PLACEHOLDER}\n\n"
 
-        prompt += "### Guidance ###\n"
-        prompt += """Here are some useful guidelines you need to follow:
-- If the task is finished, you should terminate the task in time!
-- If you stuck in an action, you should try to change the action or the correspoinding parameters. Do not always repeat the same action!
-- Sometimes there is some default text in the text field you want to type in, remember to delete them before typing.
-- To delete some text, you can place the cursor at the right place and long press the backspace to delete all the text.
+#         prompt += "### Guidance ###\n"
+#         prompt += """Here are some useful guidelines you need to follow:
+# - If the task is finished, you should terminate the task in time!
+# - If you stuck in an action, you should try to change the action or the correspoinding parameters. Do not always repeat the same action!
+# - Sometimes there is some default text in the text field you want to type in, remember to delete them before typing.
+# - To delete some text, you can place the cursor at the right place and long press the backspace to delete all the text.
 
-"""
+# """
+        if hasattr(episodedata, "input_tips") and episodedata.input_tips is not None:
+            prompt += "### Tips ###\n"
+            prompt += "From previous experience interacting with the device, you have collected the following tips that might be useful for deciding what to do next:\n"
+            prompt += f"{episodedata.input_tips}\n\n"
 
         prompt += "### Response Requirements ###\n"
         prompt += """First, think about the requirements that have been completed in previous operations and the requirements that need to be completed in the next one operation. Put your thinking process in one sentence in `Thought` part.
@@ -242,7 +263,7 @@ Action: ... (Your action description)
             "role": "user",
             "content": [
                 {"type": "text","text": prompt},
-                {"type": "image_url","image_url": {"url": encode_image_url(pixels)}}
+                {"type": "image_url","image_url": {"url": encode_image_url(pixels)}, "resized_height": resized_height, "resized_width": resized_width}
             ]
         })
 
@@ -343,10 +364,165 @@ class Reflector(SubAgent):
             "role": "user",
             "content": [
                 {"type": "text","text": prompt},
-                {"type": "image_url","image_url": {"url": encode_image_url(pixels_before)}},
-                {"type": "image_url","image_url": {"url": encode_image_url(pixels_after)}}
+                {"type": "image_url","image_url": {"url": encode_image_url(pixels_before)}, "resized_height": resized_height, "resized_width": resized_width},
+                {"type": "image_url","image_url": {"url": encode_image_url(pixels_after)}, "resized_height": resized_height, "resized_width": resized_width}
             ]
         })
+
+        return messages
+
+    def parse_response(self, response: str) -> dict:
+        outcome = response.split("### Outcome ###")[-1].split("### Error Description ###")[0].replace("\n", " ").replace("  ", " ").strip()
+        error_description = response.split("### Error Description ###")[-1].replace("\n", " ").replace("  ", " ").strip()
+        return outcome, error_description
+
+
+class LongReflector(SubAgent):
+    def __init__(
+        self,
+        evoke_every_steps: int = 5,
+        detect_error: bool = True,
+        num_histories = 'auto',
+        num_latest_screenshots: int = 0
+    ):
+        super().__init__()
+        self.evoke_every_steps = evoke_every_steps
+        self.detect_error = detect_error
+        if num_histories == 'auto':
+            self.num_histories = evoke_every_steps
+        else:
+            self.num_histories = num_histories
+        self.num_latest_screenshots = num_latest_screenshots
+    
+    def detect(
+        self, 
+        episodedata: EpisodeData,
+        max_repeat_action: int = 3,
+        max_repeat_screen: int = 3,
+        max_fail_count: int = 3
+    ) -> str:
+        error = ''
+        trajectory = episodedata.trajectory
+        if len(trajectory) < min(max_repeat_action, max_repeat_screen, max_fail_count):
+            return error
+        current_step = trajectory[-1]
+
+        # detect repeated actions
+        repeat_action = 1
+        if current_step.action not in ["swipe", "scroll"]:
+            for step in trajectory[:-1][::-1]:
+                if step.action == current_step.action:
+                    repeat_action += 1
+                else:
+                    break
+                if repeat_action >= max_repeat_action:
+                    error += f"The action `{current_step.action_s}` has repeated more than {max_repeat_action} times.\n"
+                    break
+
+        # detect repeated screenshots
+        repeat_screen = 1
+        for step in trajectory[:-1][::-1]:
+            if is_same_image(step.exec_env_state.pixels.copy(), current_step.exec_env_state.pixels.copy()):
+                repeat_screen += 1
+            else:
+                break
+            if repeat_screen >= max_repeat_screen:
+                error += f"The screen has kept unchanged for more than {max_repeat_screen} times.\n"
+                break
+
+        # detect fail reflection
+        if hasattr(current_step, "reflection_outcome") and current_step.reflection_outcome is not None:
+            fail_count = 0
+            for step in trajectory[::-1]:
+                if step.reflection_outcome != "A" and step.reflection_outcome is not None:
+                    fail_count += 1
+                else:
+                    break
+                if fail_count >= max_fail_count:
+                    error += f"You have encountered several failed attempts.\n"
+                    break
+
+        return error
+        
+
+    def get_message(self, episodedata: EpisodeData) -> list:
+        error = ''
+        if self.detect_error:
+            error = self.detect(episodedata)
+        step_idx = len(episodedata.trajectory)
+        if step_idx % self.evoke_every_steps != 0 and error == '':
+            return None
+
+        messages = []
+        trajectory = episodedata.trajectory
+        current_step = trajectory[-1]
+
+        num_latest_screenshots = min(self.num_latest_screenshots, len(trajectory))
+        if num_latest_screenshots > 0:
+            screenshots = [step.exec_env_state.pixels.copy() for step in trajectory[-num_latest_screenshots:]]
+            resized_height, resized_width = smart_resize(height=screenshots[0].height, width=screenshots[0].width)
+
+        # Add system prompt
+        messages.append({
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "You are a helpful AI assistant for operating mobile phones. Your goal is to verify whether the latest action produced the expected behavior."
+                }
+            ]
+        })
+
+        # Add user prompt
+        prompt = "### User Instruction ###\n"
+        prompt += f"{episodedata.goal}\n\n"
+
+        if hasattr(current_step, "plan") and current_step.plan is not None:
+            prompt += "### Overall Plan ###\n"
+            prompt += "This is the high-level plan you made to achieve the user's instruction:\n"
+            prompt += f"{current_step.plan}\n\n"
+        
+        prompt += "### Latest History Operations ###\n"
+        prompt += "You have done the following operation on the current device):\n"
+        history = get_history(trajectory, self.num_histories)
+        prompt += "\n".join(history)
+        if hasattr(current_step, "answer") and current_step.answer is not None:
+            prompt += f"Final answer: {current_step.answer}\n"
+        prompt += "\n"
+            
+        if hasattr(current_step, "progress") and current_step.progress is not None:
+            prompt += "### Progress ###\n"
+            prompt += "After completing the history operations, you have the following thoughts about the progress of user\'s instruction completion:\n"
+            prompt += f"Completed contents:\n{current_step.progress}\n\n"
+        
+        if num_latest_screenshots > 0:
+            prompt += "### Latest Screenshots\n"
+            prompt += f"This is the latest screenshots when you are performing operations to complete user\'s instruction. The width and height are {resized_width} and {resized_height} pixels, respectively.\n"
+            for i in range(len(screenshots)):
+                prompt += f"{IMAGE_PLACEHOLDER}"
+            prompt += "\n\n"
+        
+        if error is not None:
+            prompt += "### Warning Information ###\n"
+            prompt += f"{error}\n\n"
+
+        prompt += "---\n"
+        prompt += "Carefully examine the information provided above to determine whether the latest history operations are on the right path to completing the user's instruction.\n\n"
+
+        prompt += "Provide your output in the following format containing three parts:\n\n"
+        prompt += "### Outcome ###\n"
+        prompt += "Choose from the following options. Give your answer as \"A\" or \"B\":\n"
+        prompt += "A: Successful or Partially Successful. The latest history operations meets the expectation. Or although there is something wrong, it has been corrected.\n"
+        prompt += "B: Failed. The latest history operations are on the wrong path.  It may result in a wrong page, or produce no changes, or being meaninglessly repeating.\n"
+
+        prompt += "### Error Description ###\n"
+        prompt += "If the actions failed, provide a detailed description of the error and the potential reason causing the failure. If the action succeeded, put \"None\" here.\n\n"
+
+        message_content = [{"type": "text","text": prompt}]
+        if num_latest_screenshots > 0:
+            for screenshot in screenshots:
+                message_content.append({"type": "image_url","image_url": {"url": encode_image_url(screenshot)}, "resized_height": resized_height, "resized_width": resized_width})
+        messages.append({"role": "user","content": message_content})
 
         return messages
 
@@ -416,7 +592,7 @@ class NoteTaker(SubAgent):
             "role": "user",
             "content": [
                 {"type": "text","text": prompt},
-                {"type": "image_url","image_url": {"url": encode_image_url(pixels)}}
+                {"type": "image_url","image_url": {"url": encode_image_url(pixels)}, "resized_height": resized_height, "resized_width": resized_width}
             ]
         })
 
@@ -453,19 +629,8 @@ class Processor(SubAgent):
         if len(trajectory) > 1:
             prompt += "### History operations ###\n"
             prompt += "To complete the requirements of user\'s instruction, you have performed a series of operations. These operations are as follow:\n"
-            for i in range(len(trajectory)):
-                step_list = []
-                step_list.append(f"Action: {trajectory[i].action_desc}")
-                step_list.append(f"<tool_call> {trajectory[i].action_s} </tool_call>")
-                if hasattr(trajectory[i], "summary") and trajectory[i].summary is not None:
-                    step_list.append(f"Summary: {trajectory[i].summary}")
-                if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
-                    if trajectory[i].reflection_outcome == "A":
-                        step_list.append("Successful")
-                    else:
-                        step_list.append("Failed")
-                        step_list.append(f"Feedback: {trajectory[i].reflection_error}")
-                prompt += f"Step-{i+1}: {'; '.join(step_list)}\n"
+            history = get_history(trajectory)
+            prompt += "\n".join(history)
             prompt += "\n"
             
             previous_step = trajectory[-2]
@@ -506,14 +671,88 @@ class Processor(SubAgent):
         return response.split("### Completed contents ###")[-1].replace("\n", " ").replace("  ", " ").strip()
 
 
-class Evolutor(SubAgent):
+"""
+Decide whether the user's instruction has been completed successfully.
+"""
+class Evaluator(SubAgent):
+    def __init__(self, num_latest_screenshots: int = 3):
+        super().__init__()
+        self.num_latest_screenshots = num_latest_screenshots
+
     def get_message(self, episodedata: EpisodeData) -> list:
         messages = []
         trajectory = episodedata.trajectory
         last_step = trajectory[-1]
 
-        pixels = current_step.curr_env_state.pixels.copy()
-        resized_height, resized_width = smart_resize(height=pixels.height, width=pixels.width)
+        num_latest_screenshots = min(self.num_latest_screenshots, len(trajectory))
+        screenshots = [step.exec_env_state.pixels.copy() for step in trajectory[-num_latest_screenshots:]]
+        resized_height, resized_width = smart_resize(height=screenshots[0].height, width=screenshots[0].width)
+        
+        # Add system prompt
+        messages.append({
+            "role": "system",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "You are a helpful AI assistant for operating mobile phones. Your goal is to evaluate whether the user's instruction has been completed successfully."
+                }
+            ]
+        })
+
+        # Add user prompt
+        prompt = "### User Instruction ###\n"
+        prompt += f"{episodedata.goal}\n\n"
+
+        if hasattr(last_step, "plan") and last_step.plan is not None:
+            prompt += "### Overall Plan ###\n"
+            prompt += "This is the high-level plan you made to achieve the user's instruction:\n"
+            prompt += f"{last_step.plan}\n\n"
+        
+        prompt += "### History operations ###\n"
+        prompt += "To complete the requirements of user\'s instruction, you have performed a series of operations. These operations are as follow:\n"
+        history = get_history(trajectory)
+        prompt += "\n".join(history)
+        if hasattr(last_step, "answer") and last_step.answer is not None:
+            prompt += f"Final answer: {last_step.answer}\n"
+        prompt += "\n"
+            
+        if hasattr(last_step, "progress") and last_step.progress is not None:
+            prompt += "### Progress ###\n"
+            prompt += "After completing the history operations, you have the following thoughts about the progress of user\'s instruction completion:\n"
+            prompt += f"Completed contents:\n{last_step.progress}\n\n"
+        
+        prompt += "### Latest Screenshots\n"
+        prompt += f"This is the latest screenshots when you are performing operations to complete user\'s instruction. The width and height are {resized_width} and {resized_height} pixels, respectively.\n"
+        for i in range(len(screenshots)):
+            prompt += f"{IMAGE_PLACEHOLDER}"
+        prompt += "\n\n"
+
+        prompt += "### Response requirements ###\n"
+        prompt += "Carefully examine the latest screenshots and the information provided above to determine whether the user's instruction is successfully completed or not. Provide your output in the following format:\n\n"
+
+        prompt += "### Result ###\n"
+        prompt += "Give your answer as \"Success\" or \"Failed\"."
+        prompt += "### Reason ###\n"
+        prompt += "If the result is \"Failed\", provide a detailed description of the error and the potential reason causing this failure. If the result is \"Success\", put \"None\" here.\n"
+
+        message_content = [{"type": "text","text": prompt}]
+        for screenshot in screenshots:
+            message_content.append({"type": "image_url","image_url": {"url": encode_image_url(screenshot)}, "resized_height": resized_height, "resized_width": resized_width})
+        messages.append({"role": "user","content": message_content})
+
+        return messages
+    
+    def parse_response(self, response: str):
+        result = response.split("### Result ###")[-1].split("### Reason ###")[0].replace("\n", " ").replace("  ", " ").strip()
+        reason = response.split("### Reason ###")[-1].replace("\n", " ").replace("  ", " ").strip()
+        return result, reason
+
+
+class Evolutor(SubAgent):
+    def get_message(self, episodedata: EpisodeData) -> list:
+        messages = []
+        trajectory = episodedata.trajectory
+        last_step = trajectory[-1]
 
         # Add system prompt
         messages.append({
@@ -544,17 +783,12 @@ class Evolutor(SubAgent):
             prompt += "No tips recorded.\n\n"
 
         prompt += "### Full Action History ###\n"
-        if info_pool.action_history != []:
-            latest_actions = info_pool.action_history
-            latest_summary = info_pool.summary_history
-            action_outcomes = info_pool.action_outcomes
-            error_descriptions = info_pool.error_descriptions
-            progress_status_history = info_pool.progress_status_history
-            for act, summ, outcome, err_des, progress in zip(latest_actions, latest_summary, action_outcomes, error_descriptions, progress_status_history):
-                if outcome == "A":
-                    prompt += f"- Action: {act} | Description: {summ} | Outcome: Successful | Progress: {progress}\n"
-                else:
-                    prompt += f"- Action: {act} | Description: {summ} | Outcome: Failed | Feedback: {err_des}\n"
+
+        if len(trajectory) > 0:
+            history = get_history(trajectory)
+            prompt += "\n".join(history)
+            if hasattr(last_step, "answer") and last_step.answer is not None:
+                prompt += f"Final answer: {last_step.answer}\n"
             prompt += "\n"
         else:
             prompt += "No actions have been taken yet.\n\n"
@@ -575,8 +809,149 @@ class Evolutor(SubAgent):
 
         prompt += "### Updated Tips ###\n"
         prompt += "If you have any important new tips to add (not already included in the existing tips), combine them with the current list. If there are no new tips, simply copy the existing tips here. Keep your tips concise and general.\n"
-        return prompt
+        # prompt += "If there are more than 10 tips, keep the most important 10 ones.\n"
+
+        messages.append({
+            "role": "user",
+            "content": [{"type": "text","text": prompt}]
+        })
+
+        return messages
 
     def parse_response(self, response: str) -> dict:
-        updated_tips = response.split("### Updated Tips ###")[-1].replace("\n", " ").replace("  ", " ").strip()
-        return {"updated_tips": updated_tips}
+        updated_tips = response.split("### Updated Tips ###")[-1].strip()
+        return updated_tips
+
+
+class UITARSOperator(SubAgent):
+    def __init__(self, enable_multi_model=False, num_latest_screenshot: int = 5):
+        super().__init__()
+        self.enable_multi_model = enable_multi_model
+        self.num_latest_screenshot = num_latest_screenshot
+
+        self.system_prompt = r"""You are a GUI agent. You are given a task and your action history, with screenshots. You need to perform the next action to complete the task. 
+
+## Output Format
+```\nThought: ...
+Action: ...\n```
+
+## Action Space
+click(start_box='<|box_start|>(x1,y1)<|box_end|>')
+long_press(start_box='<|box_start|>(x1,y1)<|box_end|>', time='')
+type(content='')
+scroll(start_box='<|box_start|>(x1,y1)<|box_end|>', end_box='<|box_start|>(x3,y3)<|box_end|>')
+press_home()
+press_back()
+finished(content='') # Submit the task regardless of whether it succeeds or fails.
+
+## Note
+- Use English in `Thought` part.
+
+- Write a small plan and finally summarize your next action (with its target element) in one sentence in `Thought` part.
+
+## User Instruction
+"""
+
+        self.ACTION_SPACE = ['click', 'long_press', 'type', 'scroll', 'press_home', 'press_back', 'finished', 'answer']
+
+        self.messages = []
+
+    def get_message(self, episodedata: EpisodeData) -> list:
+        trajectory = episodedata.trajectory
+        current_step = trajectory[-1]
+        
+        pixels = current_step.curr_env_state.pixels.copy()
+
+        if len(trajectory) == 1:
+            self.messages.append({
+                "role": "user",
+                "content": [{"type": "text","text": self.system_prompt + f"{episodedata.goal}\n"}]
+            })
+        else:
+            previous_step = trajectory[-2]
+            self.messages.append({
+                "role": "assistant",
+                "content": [
+                    {"type": "text","text": f"Thought: {previous_step.thought}\nAction: {previous_step.action_s}\n"},
+                    # {"type": "text","text": f"Action: {previous_step.action_s}\n"},
+                ]
+            })
+
+        if self.enable_multi_model:
+            prompt = ""
+            if hasattr(current_step, "plan") and current_step.plan is not None:
+                prompt += "### Overall Plan ###\n"
+                prompt += f"{current_step.plan}\n\n"
+
+            if hasattr(current_step, "sub_goal") and current_step.sub_goal is not None:
+                prompt += "### Current Subgoal ###\n"
+                prompt += f"{current_step.sub_goal}\n\n"
+
+            if len(trajectory) > 1:
+                previous_step = trajectory[-2]
+                if hasattr(previous_step, "progress") and previous_step.progress is not None:
+                    prompt += "### Progress ###\n"
+                    prompt += "After completing the history operations, you have the following thoughts about the progress of user\'s instruction completion:\n"
+                    prompt += f"Completed contents:\n{previous_step.progress}\n\n"
+
+                if hasattr(previous_step, "memory") and previous_step.memory is not None:
+                    prompt += "### Memory ###\n"
+                    prompt += "During the operations, you record the following contents on the screenshot for use in subsequent operations:\n"
+                    prompt += f"{previous_step.memory}\n\n"
+
+                if hasattr(previous_step, "reflection_outcome") and previous_step.reflection_outcome is not None and previous_step.reflection_outcome != "A":
+                    prompt += "### Latest operation ###\n"
+                    prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflection_error}\n You need to reflect and revise your operation this time."
+                    prompt += "\n\n"
+
+            if hasattr(episodedata, "input_tips") and episodedata.input_tips is not None:
+                prompt += "### Tips ###\n"
+                prompt += "From previous experience interacting with the device, you have collected the following tips that might be useful for deciding what to do next:\n"
+                prompt += f"{episodedata.input_tips}\n\n"
+
+        self.messages.append({ "role": "user", "content": [{"type": "text","text": IMAGE_PLACEHOLDER}]})
+        self.messages.append({ "role": "user", "content": [{"type": "image_url","image_url": {"url": encode_image_url(pixels)}}]})
+
+        messages = remove_img_placeholder(self.messages, num_latest_screenshot=self.num_latest_screenshot)
+
+        if self.enable_multi_model:
+            messages.insert(-1, { "role": "user", "content": [{"type": "text","text": prompt}]})
+
+        return messages
+    
+    def parse_response(self, content: str, size: tuple[float, float], raw_size: tuple[float, float]):
+        thought = re.search(r"Thought:(.*?)(?=\n|Action:)", content, flags=re.DOTALL)
+        if thought:
+            thought_s = thought.group(1).strip()
+        else:
+            thought_s = None
+
+        action = re.search(r'Action:(.*)', content, flags=re.DOTALL)
+        # action = re.search(r'Action:(.*?)(?=\n|Thought|Action)', content, flags=re.DOTALL)
+        action_s = action.group(1).strip()
+        name = re.search(r'([a-z_]+)', action_s.lower()).group(1).strip()
+
+        params = {}
+        action_params = re.findall(r"(\w+)='([^']*)'", action_s)
+        if len(action_params):
+            for k, v in action_params:
+                try:
+                    x, y = eval(v)
+                    x = round(x / 1000 * raw_size[0])
+                    y = round(y / 1000 * raw_size[1])
+                    params[k] = (x, y)
+                except:
+                    params[k] = v.strip()
+        
+        if name not in self.ACTION_SPACE:
+            raise Exception(f"Action {name} is not in the action space.")
+        if name in ['click', 'long_press', 'scroll']:
+            if 'start_box' not in params:
+                raise Exception(f"Action {name} requires 'start_box' parameter.")
+        if name == 'scroll' and 'end_box' not in params:
+            raise Exception(f"Action {name} requires 'end_box' parameter.")
+        if name == 'type' and 'content' not in params:
+            raise Exception(f"Action {name} requires 'content' parameter.")
+
+        action_a = Action(name=name, parameters=params)
+        return thought_s, action_a, action_s

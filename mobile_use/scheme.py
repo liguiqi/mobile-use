@@ -98,6 +98,8 @@ class StepData:
     memory: Optional[str] = None
     reflection_outcome: Optional[str] = None
     reflection_error: Optional[str] = None
+    long_reflection_outcome: Optional[str] = None
+    long_reflection_error: Optional[str] = None
 
 @dataclass
 class EpisodeData:
