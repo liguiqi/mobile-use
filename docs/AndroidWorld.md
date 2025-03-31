@@ -74,7 +74,7 @@ class MobileUse(base_agent.EnvironmentInteractingAgent):
         return base_agent.AgentInteractionResult(False, {"step_data": self.agent.trajectory[-1]})
 ```
 
-## Step 3: Modifying AndroidWorld `run.py`
+## Step 3: Modify AndroidWorld `run.py`
 Import moible-use and the new MobileUse agent created for AndroidWorld:
 ```
 import mobile_use
@@ -111,9 +111,40 @@ def _get_agent(
 ```
 
 ## Step 4: Run the AndroidWorld benchmark
+Set environment variables for LLM calls.
+```
+export OPENAI_API_KEY=EMPTY # required by AndroidWorld, useless if you choose MobileUse as your agent
+# set the Base URL and API Key of the multimodal large language model for MobileUse
+export VLM_API_KEY=<your-api-key>
+export VLM_BASE_URL=<your-api-base-url>
+```
+
 Run the AndroidWorld benchmark with MobileUse:
 ```
 cd android_world
 python run.py --agent_name=mobile_use ...
 ```
 See [android_world: Run the benchmark](https://github.com/google-research/android_world?tab=readme-ov-file#run-the-benchmark) for more details about the AndroidWorld benchmark running.
+
+## Step 5: Best Practice
+To achieve great performance on AndroidWorld with MobileUse, you can refer to the following configs:
+```
+import mobile_use
+
+mobile_use_vlm = mobile_use.VLMWrapper(
+    model_name="qwen2.5-vl-72b-instruct",
+    api_key=os.getenv('VLM_API_KEY'),
+    base_url=os.getenv('VLM_BASE_URL'),
+    max_tokens=1024
+)
+
+agent = mobile_use.Agent.from_params(dict(
+  type='MultiAgent',
+  env=mobile_use_env,
+  vlm=mobile_use_vlm,
+  use_planner=False,
+  use_reflector=True,
+  use_note_taker=False,
+  use_processor=False,
+))
+```
