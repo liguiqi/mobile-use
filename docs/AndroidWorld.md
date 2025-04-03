@@ -145,6 +145,6 @@ agent = mobile_use.Agent.from_params(dict(
   use_planner=False,
   use_reflector=True,
   use_note_taker=False,
-  use_processor=False,
+  use_processor=True,
 ))
 ```
