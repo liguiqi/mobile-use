@@ -8,6 +8,8 @@ Install mobile-use by following the guidance in [README.md](../README.md).
 
 We recommand you to install mobile-use in the same environment created for AndroidWorld.
 
+📌 **Note**: To run AndroidWorld on the Windows platform, you should use python>=3.12.
+
 ## Step 2: Create MobileUse agent in AndroidWorld
 
 Create a new file named `mobile_use_agent.py` in `android_world/android_world/agents` with the following code:
@@ -148,3 +150,38 @@ agent = mobile_use.Agent.from_params(dict(
   use_processor=True,
 ))
 ```
+
+## Frequent Questions
+**Q1: My default adb port 5037 is not available. How to specify another adb port, such as 5038?**
+
+When creating the Mobile Use environment, change the port number:
+```
+import mobile_use
+mobile_use_env = mobile_use.Environment(serial_no=..., port=5038)
+```
+
+Specify the port number in AndroidWorld `android_world/android_world/env/android_world_controller.py`:
+```
+def get_controller(
+...
+          adb_controller=config_classes.AdbControllerConfig(adb_path=adb_path, adb_server_port=5038),
+...
+```
+
+Set the environment variable `ANDROID_ADB_SERVER_PORT` before starting the Android Virtual Device.
+```
+export ANDROID_ADB_SERVER_PORT=5038 # unix platform
+# set ANDROID_ADB_SERVER_PORT=5038 ## windows platform
+adb start-server
+.../emulator -avd AndroidWorldAvd -no-snapshot -grpc 8554
+```
+
+**Q2: How to run AndroidWorld on the Windows platform?**
+
+Python >= 3.12 is required.
+
+In `androidworld/run.py` and `androidworld/minimal_task_runner.py`, add your adb path to `_find_adb_directory()`:
+```
+potential_paths = [r'...\adb.exe']
+```
+
