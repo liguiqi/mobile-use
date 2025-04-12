@@ -52,6 +52,11 @@ class Environment:
         package = self._d.app_current().package
         state = EnvState(pixels=pixels, package=package)
         return state
+    
+    def get_time(self) -> str:
+        re = self._d.shell('date')
+        time.sleep(2)
+        return re
 
     def execute_action(self, action: Action):
         answer = None
@@ -93,8 +98,9 @@ class Environment:
                 os.system(f"adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast -a ADB_INPUT_B64 --es msg %s" %charsb64)
                 self._d.shell(["ime", "disable", 'com.android.adbkeyboard/.AdbIME'])
             else:
-                print("TYPE: No Chinese detected.")
                 self._d.shell(["input", "text", text])
+            # # Press Enter key
+            # self._d.keyevent("ENTER")
         elif action.name == 'key':
             text = action.parameters['text']
             self._d.keyevent(text)
@@ -119,7 +125,7 @@ class Environment:
             time.sleep(duration)
         elif action.name == 'answer':
             answer = action.parameters['text']
-            os.system(f'adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast com.example.ACTION_UPDATE_OVERLAY --es task_type_string "Agent answered:" --es goal_string "{text}"')
+            os.system(f'adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast com.example.ACTION_UPDATE_OVERLAY --es task_type_string "Agent answered:" --es goal_string "{answer}"')
         elif action.name == 'system_button':
             button = action.parameters['button']
             if button == 'Back':
@@ -130,6 +136,17 @@ class Environment:
                 self._d.keyevent("MENU")
             elif button == 'Enter':
                 self._d.keyevent("ENTER")
+        elif action.name == 'clear_text':
+            re = self._d.shell(["ime", "enable", 'com.android.adbkeyboard/.AdbIME'])
+            logger.info(re)
+            re = self._d.shell(["ime", "set", 'com.android.adbkeyboard/.AdbIME'])
+            logger.info(re)
+            time.sleep(1)
+            os.system(f"adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast -a ADB_CLEAR_TEXT")
+            re = self._d.shell(["ime", "disable", 'com.android.adbkeyboard/.AdbIME'])
+            logger.info(re)
+            re = self._d.shell(["input", "text", " "])
+            logger.info(re)
         else:
             raise ValueError(f"Unknown action: {action.name}")
         time.sleep(self.wait_after_action_seconds)

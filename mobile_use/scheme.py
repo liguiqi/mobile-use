@@ -110,4 +110,8 @@ class EpisodeData:
     trajectory: Optional[List[StepData]] = None
     create_time: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
     input_tips: Optional[str] = None
+    retrieved_tips: Optional[str] = None
     output_tips: Optional[str] = None
+    finish_count: Optional[int] = 0
+    evaluation_result: Optional[str] = None
+    evaluation_reason: Optional[str] = None

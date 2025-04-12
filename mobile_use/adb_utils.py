@@ -19,9 +19,10 @@ import re
 import time
 from typing import Any, Callable, Collection, Iterable, Literal, Optional, TypeVar
 import unicodedata
-from absl import logging
 import immutabledict
 from adbutils import AdbDevice
+import logging
+logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
 
@@ -157,7 +158,8 @@ def _launch_default_app(
       '-d',
       data_uri,
   ]
-  device.shell(adb_command, timeout_sec=timeout_sec)
+  logger.info(f'Launche default app: {app_key}')
+  device.shell(adb_command)
 
 
 def launch_app(
@@ -182,10 +184,10 @@ def launch_app(
   activity = get_adb_activity(app_name)
   if activity is None:
     #  If the app name is not in the mapping, assume it is a package name.
-    device.shell(['shell', 'monkey', '-p', app_name, '1'], timeout_sec=5)
-    logging.info(f'Launch app {app_name} by package name.')
+    device.shell(['monkey', '-p', app_name, '1'])
+    logger.info(f'Launch app {app_name} by package name.')
     return app_name
   # use adbtutils to start the activity
-  device.shell(['shell', 'am', 'start', '-n', activity], timeout_sec=5)
-  logging.info(f'Launch app {app_name} by activity.')
+  device.shell(['am', 'start', '-n', activity])
+  logger.info(f'Launch app {app_name} by activity.')
   return app_name

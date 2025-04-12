@@ -1,3 +1,4 @@
+import logging
 import math
 import base64
 from io import BytesIO
@@ -5,6 +6,8 @@ from PIL import Image
 from typing import Tuple, Union, List
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
+
+logger = logging.getLogger(__name__)
 
 
 def encode_image_url(image: Image.Image, resize: Union[Tuple, List]=None) -> str:
@@ -103,3 +106,52 @@ def is_same_image(img1: Image.Image, img2: Image.Image):
     img1 = np.array(img1)
     img2 = np.array(img2)
     return np.array_equal(img1, img2)
+
+def diff_image(
+    img1: Image.Image,
+    img2: Image.Image,
+    pixel_threshold: int = 5,
+    area_threshold: int = 1000,
+    max_boxes: int = 2,
+    merge_threshold: int = 20,
+):
+    import cv2
+    img1_array = np.array(img1)
+    img2_array = np.array(img2)
+    opencv_image1 = cv2.cvtColor(img1_array, cv2.COLOR_RGB2BGR)
+    opencv_image2 = cv2.cvtColor(img2_array, cv2.COLOR_RGB2BGR)
+
+    diff = cv2.absdiff(opencv_image1, opencv_image2)
+    diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+    _, thresh = cv2.threshold(diff_gray, pixel_threshold, 255, cv2.THRESH_BINARY)
+    kernel = np.ones((merge_threshold, merge_threshold), np.uint8)
+    dilated = cv2.dilate(thresh, kernel, iterations=1)
+    contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    logger.info(f"DIFF IMAGE: Number of raw contours: {len(contours)}")
+    contours = [c for c in contours if cv2.contourArea(c) > area_threshold]
+    logger.info(f"DIFF IMAGE: Number of filtered contours: {len(contours)}")
+    if len(contours) == 0:
+        logger.info("DIFF IMAGE: No contours found.")
+        return None, None
+    if len(contours) == 1:
+        x, y, w, h = cv2.boundingRect(contours[0])
+        if (x, y, w, h) == (0, 0, img2.size[0], img2.size[1]):
+            logger.info("DIFF IMAGE: The two images are exactly different.")
+            return None, None
+    if len(contours) > max_boxes:
+        logger.info(f"DIFF IMAGE: Too many contours found: {len(contours)}")
+        return None, None
+
+    new_img1 = opencv_image1.copy()
+    new_img2 = opencv_image2.copy()
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        x = max(0, x-3)
+        y = max(0, y-3)
+        w = min(w + 6, img1.size[0] - x)
+        h = min(h + 6, img1.size[1] - y)
+        cv2.rectangle(new_img1, (x, y), (x + w, y + h), (0, 0, 255), 3)
+        cv2.rectangle(new_img2, (x, y), (x + w, y + h), (0, 0, 255), 3)
+    new_img1 = Image.fromarray(cv2.cvtColor(new_img1, cv2.COLOR_BGR2RGB))
+    new_img2 = Image.fromarray(cv2.cvtColor(new_img2, cv2.COLOR_BGR2RGB))
+    return new_img1, new_img2
