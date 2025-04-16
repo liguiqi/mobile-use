@@ -1,0 +1,6 @@
+[submodule "third_party/android_world"]
+	path = third_party/android_world
+	url = https://github.com/google-research/android_world.git
+[submodule "third_party/android_env"]
+	path = third_party/android_env
+	url = https://github.com/google-deepmind/android_env.git
