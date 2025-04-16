@@ -14,7 +14,8 @@ https://github.com/user-attachments/assets/5c4d3ce8-0135-4e6e-b003-b20f81f834d4
 **⚠️特别提醒**：操作动作由智能体自主决定，可能存在不可控的操作风险，建议体验是时刻关注手机动态如遇到操作风险及时终止任务或者使用测试手机进行体验，避免误操作带来问题。
 
 ## 🎉 News
-- **[2025/03/17]**: MMobile Use 现在支持[**多智能体**](mobile_use/agents/multi_agent.py)框架！配备了规划、反思、记忆和进展机制，Mobile Use 在 AndroidWorld 上实现了令人印象深刻的性能！
+- **[2025/03/28]**: 在 AndroidWorld 动态环境中运行 Mobile Use 的[文档](AndroidWorld.md)现已发布！
+- **[2025/03/17]**: MMobile Use 现在支持[多智能体](../mobile_use/agents/multi_agent.py)框架！配备了规划、反思、记忆和进展机制，Mobile Use 在 AndroidWorld 上实现了令人印象深刻的性能！
 - **[2025/03/04]**: Mobile Use 已发布！我们还发布了 [mobile-use](https://github.com/MadeAgents/mobile-use) 库的 v0.1.0 版本，为您提供移动设备的 AI 助手——任何应用，任何任务！
 
 ## 📊 Benchmark
@@ -114,6 +115,16 @@ python -m mobile_use.webui
 
 在左下方的输入框输入任务描述，点击开始即可执行任务。
 
+### 7. 支持中文字符 (可选)
+
+如果你想在手机上输入中文字符，比如让 MobileUse 执行这样的命令：在美团app里搜索咖啡，你需要
+
+- Step 1. 下载 ADBKeyBoard apk, 点击 [这里](https://github.com/senzhk/ADBKeyBoard).
+- Step 2. 将 ADBKeyBoard 安装到你的手机里.
+  ```
+  adb install <path-to-ADBKeyboard.apk>
+  ```
+
 
 ## 🎉 More Demo
 Case1：Search the latest news of DeepSeek-R2 in Xiaohongshu APP and forward one of the news to the Weibo App
@@ -201,11 +212,13 @@ while going:
         print(step_data.action, step_data.thought)
 ```
 
+### 在 AndoirdWorld 中使用 Mobile Use
+见 [AndroidWorld.md](AndroidWorld.md).
 
 ## 🗺️ Roadmap
-- [ ] 改进智能体的记忆和提升智能体的反思能力 (summarize, compress.)
-- [ ] 基于多智能体探索提升整体任务的效果
-- [ ] 提供一个关于AndroidWorld动态环境的评估流程
+- [x] 改进智能体的记忆和提升智能体的反思能力 (summarize, compress.)
+- [x] 基于多智能体探索提升整体任务的效果
+- [x] 提供一个关于AndroidWorld动态环境的评估流程
 - [ ] 开发一个可以直接安装在手机上的APP
 
 
