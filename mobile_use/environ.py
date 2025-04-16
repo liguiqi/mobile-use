@@ -101,7 +101,7 @@ class Environment:
             time.sleep(duration)
         elif action.name == 'answer':
             answer = action.parameters['text']
-            os.system(f'adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast com.example.ACTION_UPDATE_OVERLAY --es task_type_string "Agent answered:" --es goal_string "{text}"')
+            os.system(f'adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast com.example.ACTION_UPDATE_OVERLAY --es task_type_string "Agent answered:" --es goal_string "{answer}"')
         elif action.name == 'system_button':
             button = action.parameters['button']
             if button == 'Back':
