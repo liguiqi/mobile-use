@@ -229,10 +229,6 @@ You are provided with function signatures within <tools></tools> XML tags:
             prompt += "### Overall Plan ###\n"
             prompt += f"{current_step.plan}\n\n"
 
-        # if hasattr(current_step, "progress_status") and current_step.progress_status is not None:
-        #     prompt += "### Progress Status ###\n"
-        #     prompt += f"{current_step.progress_status}\n\n"
-
         if hasattr(current_step, "sub_goal") and current_step.sub_goal is not None:
             prompt += "### Current Subgoal ###\n"
             prompt += f"{current_step.sub_goal}\n\n"
@@ -555,6 +551,7 @@ class LongReflector(SubAgent):
             self.sleep_count += 1
             return None
 
+        self.sleep_count = 0
         messages = []
         trajectory = episodedata.trajectory
         current_step = trajectory[-1]

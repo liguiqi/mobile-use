@@ -120,9 +120,11 @@ class MultiAgent(Agent):
             use_long_reflector: bool=False,
             use_note_taker: bool=False,
             use_processor: bool=False,
-            use_evaluator: bool=False,
-            use_evolutor: bool=False,
+            use_evaluator: bool=False, # new self-evolution
+            use_evolutor: bool=False, # old self-evolution
             evaluate_when_finish: bool=False,
+            reflect_on_demand: bool=False,
+            logprob_threshold: float=-0.01,
             log_dir: str=None,
         ):
         super().__init__(env=env, vlm=vlm, max_steps=max_steps)
@@ -142,6 +144,8 @@ class MultiAgent(Agent):
         self.use_evaluator = use_evaluator
         self.use_evolutor = use_evolutor
         self.evaluate_when_finish = evaluate_when_finish
+        self.reflect_on_demand = reflect_on_demand
+        self.logprob_threshold = logprob_threshold
 
         self.planner = Planner()
         self.operator = Operator()
@@ -322,6 +326,26 @@ class MultiAgent(Agent):
 
         logger.info(f"Retrieved tips: {retrieved_tips}")
         return retrieved_tips
+    
+    def get_action_type_logprobs(self, response):
+        action_type_tokens, action_type_logprobs = None, None
+        tokens, logprobs = [], []
+        for item in response.choices[0].logprobs.content:
+            tokens.append(item.token)
+            logprobs.append(item.logprob)
+        logger.info("Tokens: %s" % tokens)
+        logger.info("Logprobs: %s" % logprobs)
+
+        start_index = next((i for i in range(len(tokens) - 1, -1, -1) if 'action' in tokens[i]), None)
+        if start_index is not None:
+            end_index = next((i for i in range(start_index + 1, len(tokens)) if ',' in tokens[i]), None)
+            if end_index is not None:
+                action_type_idxs = [i for i in range(start_index + 1, end_index) if any(c.isalpha() for c in tokens[i])]
+                action_type_tokens = [tokens[i] for i in action_type_idxs]
+                action_type_logprobs = [logprobs[i] for i in action_type_idxs]
+                logger.info("Action type tokens: %s" % action_type_tokens)
+                logger.info("Action type logprobs: %s" % action_type_logprobs)
+        return action_type_tokens, action_type_logprobs
 
     def step(self):
         """Execute the task with maximum number of steps.
@@ -372,11 +396,12 @@ class MultiAgent(Agent):
 
         # Call Operator
         action_thought, action, action_s, action_desc = None, None, None, None
+        skip_reflector = False
         # operator_messages = self.operator.get_message(self.episode_data)
         operator_messages = self.operator.get_message(self.episode_data, device_time=self.device_time)
         if self.curr_step_idx in show_step:
             show_message(operator_messages, "Operator")
-        response = self.vlm.predict(operator_messages, stop=['Summary'])
+        response = self.vlm.predict(operator_messages, stop=['Summary'], logprobs=self.reflect_on_demand)
 
         for counter in range(self.max_reflection_action):
             try:
@@ -413,7 +438,6 @@ class MultiAgent(Agent):
                     self.status = AgentStatus.FAILED
             else:
                 logger.info(f"Execute the action: {action}")
-                skip_reflector = False
                 if action.name == 'type':
                     if len(self.trajectory) > 1 and self.trajectory[-2].action.name == 'type' and 'coordinate' not in action.parameters:
                         skip_reflector = True
@@ -434,9 +458,18 @@ class MultiAgent(Agent):
             step_data.action_s = action_s
             step_data.action = action
 
+            if self.reflect_on_demand:
+                action_type_tokens, action_type_logprobs = self.get_action_type_logprobs(response)
+                if action_type_tokens is not None and action_type_logprobs is not None:
+                    avg_logprob = sum(action_type_logprobs) / len(action_type_logprobs)
+                    logger.info(f"Average action type logprobs: {avg_logprob}")
+                    if avg_logprob > self.logprob_threshold:
+                        logger.info(f"Skip the reflector since the action type logprobs is lower than the threshold.")
+                        skip_reflector = True
+
         step_data.exec_env_state = self.env.get_state()
 
-        if self.status not in [AgentStatus.FINISHED, AgentStatus.FAILED]:
+        if self.status not in [AgentStatus.FINISHED, AgentStatus.FAILED] and action is not None:
             # Call Reflector
             if self.use_reflector and not skip_reflector:
                 reflection_messages = self.reflector.get_message(self.episode_data)
