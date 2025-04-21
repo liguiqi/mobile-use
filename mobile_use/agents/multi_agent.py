@@ -163,13 +163,13 @@ class MultiAgent(Agent):
         else:
             self.tips = INIT_TIPS
 
-        self.device_time = self._get_device_time()
+        self.device_time = None
 
     def reset(self, goal: str='') -> None:
         """Reset the state of the agent.
         """
         self._init_data(goal=goal)
-        self.device_time = self._get_device_time()
+        self.device_time = None
         self.planner = Planner()
         self.operator = Operator()
         self.reflector = Reflector()
