@@ -117,3 +117,4 @@ class EpisodeData:
     finish_count: Optional[int] = 0
     evaluation_result: Optional[str] = None
     evaluation_reason: Optional[str] = None
+    memory: Optional[str] = ""

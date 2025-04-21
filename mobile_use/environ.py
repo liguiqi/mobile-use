@@ -147,6 +147,9 @@ class Environment:
             logger.info(re)
             re = self._d.shell(["input", "text", " "])
             logger.info(re)
+        elif action.name == 'take_note':
+            note = action.parameters['text']
+            return note
         else:
             raise ValueError(f"Unknown action: {action.name}")
         time.sleep(self.wait_after_action_seconds)
