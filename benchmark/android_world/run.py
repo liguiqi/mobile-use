@@ -21,7 +21,13 @@ command-line flags.
 """
 
 from collections.abc import Sequence
-import os
+import os, sys
+
+project_home = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+sys.path = [
+  os.path.join(project_home, 'third_party/android_env'),
+  os.path.join(project_home, 'third_party/android_world')
+] + sys.path
 
 from absl import app
 from absl import flags
