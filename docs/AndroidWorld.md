@@ -4,6 +4,11 @@
 
 Install AndroidWorld by following the guidance in [android_world](https://github.com/google-research/android_world).
 
+Start AndroidWorldAvd and install [ADBKeyboard](https://github.com/senzhk/ADBKeyBoard) in this avd to support special text commands.
+```
+adb install <path-to-ADBKeyboard.apk>
+```
+
 Install mobile-use by following the guidance in [README.md](../README.md).
 
 We recommand you to install mobile-use in the same environment created for AndroidWorld.
