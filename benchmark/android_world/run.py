@@ -146,14 +146,6 @@ _FIXED_TASK_SEED = flags.DEFINE_boolean(
 # MiniWoB is very lightweight and new screens/View Hierarchy load quickly.
 _MINIWOB_TRANSITION_PAUSE = 0.2
 
-# Additional guidelines for the MiniWob tasks.
-_MINIWOB_ADDITIONAL_GUIDELINES = [
-    (
-        'This task is running in a mock app, you must stay in this app and'
-        ' DO NOT use the `navigate_home` action.'
-    ),
-]
-
 
 def _get_agent(
     env: interface.AsyncEnv,
@@ -167,7 +159,7 @@ def _get_agent(
     # Modify the parameters if needed.
     mobile_use_env = mobile_use.Environment(
       serial_no='emulator-5554', 
-      port=5038
+      port=5037
     )
     mobile_use_vlm = mobile_use.VLMWrapper(
         model_name="qwen2.5-vl-72b-instruct",
