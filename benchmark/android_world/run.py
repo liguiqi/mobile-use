@@ -52,6 +52,7 @@ os.environ['GRPC_TRACE'] = 'none'  # Disable tracing
 def _find_adb_directory() -> str:
   """Returns the directory where adb is located."""
   potential_paths = [
+      os.path.expanduser('/usr/lib/Android/Sdk/platform-tools/adb'),
       os.path.expanduser('~/Library/Android/sdk/platform-tools/adb'),
       os.path.expanduser('~/Android/Sdk/platform-tools/adb'),
       os.path.expanduser('~/AppData/Local/Android/Sdk/platform-tools/adb.exe')    # Windows
