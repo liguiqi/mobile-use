@@ -148,7 +148,7 @@ _FIXED_TASK_SEED = flags.DEFINE_boolean(
 _MINIWOB_TRANSITION_PAUSE = 0.2
 
 
-def _get_agent(env: interface.AsyncEnv) -> base_agent.EnvironmentInteractingAgent:
+def _get_agent(env: interface.AsyncEnv, family: str | None = None) -> base_agent.EnvironmentInteractingAgent:
   """Gets agent."""
   print('Initializing agent...')
   agent = None
