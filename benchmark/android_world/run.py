@@ -162,7 +162,7 @@ def _get_agent(
     mobile_use_env = mobile_use.Environment(serial_no='emulator-5554', port=android_adb_server_port)
     mobile_use_vlm = mobile_use.VLMWrapper(
         model_name="qwen2.5-vl-72b-instruct",
-        api_key=os.getenv('VLM_API_KEY'),
+        api_key=os.getenv('VLM_API_KEY', 'EMPTY'),
         base_url='http://hammer-llm.oppo.test/v1',
         max_tokens=1024
     )
