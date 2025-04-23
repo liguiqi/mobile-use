@@ -157,10 +157,8 @@ def _get_agent(
  
   if _AGENT_NAME.value == 'mobile_use':
     # Modify the parameters if needed.
-    mobile_use_env = mobile_use.Environment(
-      serial_no='emulator-5554', 
-      port=5037
-    )
+    android_adb_server_port = int(os.environ.get('ANDROID_ADB_SERVER_PORT', '5037'))
+    mobile_use_env = mobile_use.Environment(serial_no='emulator-5554', port=android_adb_server_port)
     mobile_use_vlm = mobile_use.VLMWrapper(
         model_name="qwen2.5-vl-72b-instruct",
         api_key=os.getenv('VLM_API_KEY'),
@@ -187,6 +185,7 @@ def _get_agent(
 
 def _main() -> None:
   """Runs eval suite and gets rewards back."""
+  android_adb_server_port = os.environ.get('ANDROID_ADB_SERVER_PORT')
   env = env_launcher.load_and_setup_env(
       console_port=_DEVICE_CONSOLE_PORT.value,
       emulator_setup=_EMULATOR_SETUP.value,
@@ -204,6 +203,8 @@ def _main() -> None:
   )
   suite.suite_family = _SUITE_FAMILY.value
 
+  # env_launcher.load_and_setup_env view drop environment ANDROID_ADB_SERVER_PORT
+  os.environ['ANDROID_ADB_SERVER_PORT'] = android_adb_server_port
   agent = _get_agent(env, _SUITE_FAMILY.value)
 
   if _SUITE_FAMILY.value.startswith('miniwob'):
