@@ -205,7 +205,8 @@ def _main() -> None:
   suite.suite_family = _SUITE_FAMILY.value
 
   # env_launcher.load_and_setup_env view drop environment ANDROID_ADB_SERVER_PORT
-  os.environ['ANDROID_ADB_SERVER_PORT'] = android_adb_server_port
+  if android_adb_server_port is None:
+      os.environ['ANDROID_ADB_SERVER_PORT'] = android_adb_server_port
   agent = _get_agent(env, _SUITE_FAMILY.value)
 
   if _SUITE_FAMILY.value.startswith('miniwob'):
