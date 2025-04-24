@@ -125,6 +125,7 @@ class MultiAgent(Agent):
             evaluate_when_finish: bool=False,
             reflect_on_demand: bool=False,
             logprob_threshold: float=-0.01,
+            include_time: bool=False,
             log_dir: str=None,
         ):
         super().__init__(env=env, vlm=vlm, max_steps=max_steps)
@@ -146,6 +147,7 @@ class MultiAgent(Agent):
         self.evaluate_when_finish = evaluate_when_finish
         self.reflect_on_demand = reflect_on_demand
         self.logprob_threshold = logprob_threshold
+        self.include_time = include_time
 
         self.planner = Planner()
         self.operator = Operator()
@@ -164,12 +166,16 @@ class MultiAgent(Agent):
             self.tips = INIT_TIPS
 
         self.device_time = None
+        if self.include_time:
+            self.device_time = self._get_device_time()
 
     def reset(self, goal: str='') -> None:
         """Reset the state of the agent.
         """
         self._init_data(goal=goal)
         self.device_time = None
+        if self.include_time:
+            self.device_time = self._get_device_time()
         self.planner = Planner()
         self.operator = Operator()
         self.reflector = Reflector()

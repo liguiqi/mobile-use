@@ -243,7 +243,7 @@ You are provided with function signatures within <tools></tools> XML tags:
             else:
                 history = get_history(trajectory[:-1], self.num_histories)
             prompt += "\n".join(history)
-            prompt += "\n"
+            prompt += "\n\n"
         else:
             prompt += "No actions have been taken yet.\n\n"
 
