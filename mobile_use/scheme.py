@@ -102,6 +102,7 @@ class StepData:
     long_reflection_error: Optional[str] = None
     action_type_tokens: Optional[List[str]] = None
     action_type_logprobs: Optional[List[float]] = None
+    exec_duration: Optional[float] = None
 
 @dataclass
 class EpisodeData:

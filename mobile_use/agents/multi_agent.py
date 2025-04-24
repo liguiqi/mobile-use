@@ -352,6 +352,7 @@ class MultiAgent(Agent):
 
         Returns: Answer
         """
+        start_time = time.time()
         logger.info("Step %d ... ..." % self.curr_step_idx)
         answer = None
         show_step = [0,4]
@@ -614,6 +615,7 @@ class MultiAgent(Agent):
                 except Exception as e:
                     logger.warning(f"Failed to parse the updated tips. Error: {e}")
 
+        step_data.exec_duration = time.time() - start_time
         return answer
 
 
