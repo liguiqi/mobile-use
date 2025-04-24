@@ -22,6 +22,7 @@ command-line flags.
 
 from collections.abc import Sequence
 import os, sys
+from dotenv import load_dotenv
 
 project_home = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path = [
@@ -41,7 +42,6 @@ from android_world.env import interface
 
 import mobile_use
 import mobile_use_agent
-
 
 logging.set_verbosity(logging.WARNING)
 
@@ -189,6 +189,11 @@ def _main() -> None:
       emulator_setup=_EMULATOR_SETUP.value,
       adb_path=_ADB_PATH.value,
   )
+
+  # Load environment variables
+  load_dotenv()
+  print("ANDROID_MAX_STEP", os.environ['ANDROID_MAX_STEP'])
+  print("ANDROID_ADB_SERVER_PORT", f"{int(os.environ.get('ANDROID_ADB_SERVER_PORT', '5037'))}")
 
   n_task_combinations = _N_TASK_COMBINATIONS.value
   task_registry = registry.TaskRegistry()
