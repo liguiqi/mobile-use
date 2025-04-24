@@ -454,7 +454,9 @@ class MultiAgent(Agent):
                     logger.info(f"Skip the reflector since there is continuous type action.")
                 else:
                     try:
+                        start_exec_time = time.time()
                         self.env.execute_action(action)
+                        step_data.exec_duration = time.time() - start_exec_time
                     except Exception as e:
                         logger.warning(f"Failed to execute the action: {action}. Error: {e}")
                         action = None
@@ -615,7 +617,7 @@ class MultiAgent(Agent):
                 except Exception as e:
                     logger.warning(f"Failed to parse the updated tips. Error: {e}")
 
-        step_data.exec_duration = time.time() - start_time
+        step_data.step_duration = time.time() - start_time
         return answer
 
 
