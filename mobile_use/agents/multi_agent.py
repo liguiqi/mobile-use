@@ -474,10 +474,16 @@ class MultiAgent(Agent):
             step_data.action = action
 
             if self.reflect_on_demand:
-                action_type_tokens, action_type_logprobs = self.get_action_type_logprobs(response)
+                action_type_tokens, action_type_logprobs = None, None
+                try:
+                    action_type_tokens, action_type_logprobs = self.get_action_type_logprobs(response)
+                except Exception as e:
+                    logger.warning(f"Failed to get the logprobs. Error: {e}")
                 if action_type_tokens is not None and action_type_logprobs is not None:
                     avg_logprob = sum(action_type_logprobs) / len(action_type_logprobs)
                     logger.info(f"Average action type logprobs: {avg_logprob}")
+                    step_data.action_type_tokens = action_type_tokens
+                    step_data.action_type_logprobs = action_type_logprobs
                     if avg_logprob > self.logprob_threshold:
                         logger.info(f"Skip the reflector since the action type logprobs is lower than the threshold.")
                         skip_reflector = True
@@ -495,7 +501,7 @@ class MultiAgent(Agent):
                     content = response.choices[0].message.content
                     logger.info("Reflection from VLM:\n%s" % content)
                     outcome, error_description = self.reflector.parse_response(content)
-                    if outcome in ['A', 'B', 'C']:
+                    if outcome in self.reflector.valid_options:
                         logger.info("Outcome: %s" % outcome)
                         logger.info("Error Description: %s" % error_description)
                         step_data.reflection_outcome = outcome
@@ -553,7 +559,7 @@ class MultiAgent(Agent):
                         content = response.choices[0].message.content
                         logger.info("Long Reflection from VLM:\n%s" % content)
                         outcome, error_description = self.long_reflector.parse_response(content)
-                        if outcome in ['A', 'B']:
+                        if outcome in self.long_reflector.valid_options:
                             logger.info("Long Outcome: %s" % outcome)
                             logger.info("Long Error Description: %s" % error_description)
                             step_data.long_reflection_outcome = outcome

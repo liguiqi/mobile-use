@@ -17,7 +17,7 @@ IMAGE_PLACEHOLDER = '<|vision_start|><|image_pad|><|vision_end|>'
 ACTION_SPACE = ["key", "click", "left_click", "long_press", "swipe", "scroll", "type", "clear_text", "answer", "system_button", "open", "wait", "terminate", "take_note"]
 
 
-def get_history(trajectory, num_histories=None):
+def get_history(trajectory: List[StepData], num_histories=None):
     start_idx = 0 if num_histories is None else max(0, len(trajectory) - num_histories)
     history = []
     for i in range(start_idx, len(trajectory)):
@@ -29,15 +29,15 @@ def get_history(trajectory, num_histories=None):
         if hasattr(trajectory[i], "reflection_outcome") and trajectory[i].reflection_outcome is not None:
             if trajectory[i].reflection_outcome == "A":
                 step_list.append("Successful")
-            else:
+            elif trajectory[i].reflection_outcome in ["B", "C"]:
                 step_list.append("Failed")
                 step_list.append(f"Feedback: {trajectory[i].reflection_error}")
-        elif hasattr(trajectory[i], "reflaction_outcome") and trajectory[i].reflaction_outcome is not None:
-            if trajectory[i].reflaction_outcome == "A":
+        elif hasattr(trajectory[i], "long_reflaction_outcome") and trajectory[i].long_reflection_outcome is not None:
+            if trajectory[i].long_reflection_outcome == "A":
                 step_list.append("Successful")
-            else:
+            elif trajectory[i].long_reflection_outcome in ["B"]:
                 step_list.append("Failed")
-                step_list.append(f"Feedback: {trajectory[i].reflaction_error}")
+                step_list.append(f"Feedback: {trajectory[i].long_reflection_error}")
         history.append(f"Step-{i+1}: {'; '.join(step_list)}")
     return history
 
@@ -259,16 +259,16 @@ You are provided with function signatures within <tools></tools> XML tags:
                 prompt += "During the operations, you record the following contents on the screenshot for use in subsequent operations:\n"
                 prompt += f"{previous_step.memory}\n\n"
 
-            # if hasattr(episodedata, "memory"):
-            #     prompt += "### Memory ###\n"
-            #     prompt += "During previous operations, you have used the action `take_note` to record the following contents on the screenshot:\n"
-            #     if episodedata.memory == "":
-            #         prompt += "None\n\n"
-            #     else:
-            #         prompt += f"{episodedata.memory}\n\n"
+            if hasattr(episodedata, "memory"):
+                prompt += "### Memory ###\n"
+                prompt += "During previous operations, you have used the action `take_note` to record the following contents on the screenshot:\n"
+                if episodedata.memory == "":
+                    prompt += "None\n\n"
+                else:
+                    prompt += f"{episodedata.memory}\n\n"
 
             if not is_answer:
-                if hasattr(previous_step, "reflection_outcome") and previous_step.reflection_outcome is not None and previous_step.reflection_outcome != "A":
+                if hasattr(previous_step, "reflection_outcome") and previous_step.reflection_outcome is not None and previous_step.reflection_outcome in ['B', 'C']:
                     # prompt += "### Latest operation ###\n"
                     # prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflection_error}\n You need to reflect and revise your operation this time."
                     # prompt += "\n\n"
@@ -276,7 +276,7 @@ You are provided with function signatures within <tools></tools> XML tags:
                     prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But the reflector find that this operation may not meet your expectation.\nFeedback:{previous_step.reflection_error}\n If you think it is reasonable, you need to reflect and revise your operation this time. If you think the reflector is not correct, you can ignore the feedback."
                     prompt += "\n\n"
                 
-                if hasattr(previous_step, "long_reflection_outcome") and previous_step.long_reflection_outcome is not None and previous_step.long_reflection_outcome != "A":
+                if hasattr(previous_step, "long_reflection_outcome") and previous_step.long_reflection_outcome is not None and previous_step.long_reflection_outcome in ['B']:
                     prompt += "### Reflection ###\n"
                     prompt += "According to your history operations, you have the following reflection:\n"
                     prompt += f"Reflection: {previous_step.long_reflection_error}\n"
@@ -385,6 +385,10 @@ Answer with the following format:
 Call after executing each action.
 """
 class Reflector(SubAgent):
+    def __init__(self):
+        super().__init__()
+        self.valid_options = ['A', 'B', 'C', 'D']
+
     def get_message(self, episodedata: EpisodeData) -> list:
         messages = []
         trajectory = episodedata.trajectory
@@ -440,10 +444,13 @@ class Reflector(SubAgent):
 
         prompt += "Provide your output in the following format containing three parts:\n\n"
         prompt += "### Outcome ###\n"
-        prompt += "Choose from the following options. Give your answer as \"A\", \"B\" or \"C\":\n"
+        prompt += "Choose from the following options. Give your answer as \"A\", \"B\",\"C\" or \"D\":\n"
         prompt += "A: Successful or Partially Successful. The result of the last action meets the expectation, or on the right path to meet the expectation.\n"
         prompt += "B: Failed. The last action results in a wrong page. I need to return to the previous state.\n"
-        prompt += "C: Failed. The last action produces no changes.\n\n"
+        prompt += "C: Failed. The last action produces no changes.\n"
+        prompt += "D: Uncertain. Can't determine whether the last action meets the expectation.\n"
+        prompt += "NOTE: In some cases, the action may not produce any observable feedback, such as click a `save` or `add` button. You can't determine whether the action meets the expectation. In this case, you can choose \"D\".\n"
+        prompt += "\n"
 
         prompt += "### Error Description ###\n"
         prompt += "If the action failed, provide a detailed description of the error and the potential reason causing this failure. If the action succeeded, put \"None\" here.\n\n"
@@ -475,6 +482,7 @@ class LongReflector(SubAgent):
         num_latest_screenshots: int = 0
     ):
         super().__init__()
+        self.valid_options = ['A', 'B']
         self.evoke_every_steps = evoke_every_steps
         self.cold_steps = cold_steps
         self.sleep_count = 0
@@ -534,7 +542,7 @@ class LongReflector(SubAgent):
         if hasattr(current_step, "reflection_outcome") and current_step.reflection_outcome is not None:
             fail_count = 0
             for step in trajectory[::-1]:
-                if step.reflection_outcome != "A" and step.reflection_outcome is not None:
+                if step.reflection_outcome in ['B', 'C']:
                     fail_count += 1
                 else:
                     break
@@ -753,7 +761,7 @@ class Processor(SubAgent):
             prompt += f"Action: {current_step.action}\n\n"
 
             if hasattr(current_step, "reflection_outcome") and current_step.reflection_outcome is not None:
-                if current_step.reflection_outcome != "A":
+                if current_step.reflection_outcome in ['B', 'C']:
                     prompt += "### Reflection ###\n"
                     prompt += "According to your current operation, you have the following reflection:\n"
                     prompt += f"Reflection: {current_step.reflection_error}\n"
@@ -923,16 +931,14 @@ class Evaluator(SubAgent):
         prompt += "Carefully examine the latest screenshots and the information provided above to determine whether the user's instruction is successfully completed or not. Provide your output in the following format:\n\n"
 
         prompt += "### Result ###\n"
-        prompt += "Give your answer as \"Success\" or \"Failed\".\n"
-        # prompt += "### Reason ###\n"
-        # prompt += "If the result is \"Failed\", provide a detailed description of the error and the potential reason causing this failure. If the result is \"Success\", explain why the user's instruction has been successfully completed.\n"
-        prompt += "### Summary ###\n"
-        prompt += "If the result is \"Success\", describe the successful plan in detail based on the whole trajectory. If the result is \"Failed\", provide the reasons why the task is failed and potential suggestions that may avoid this failure.\n"
-        prompt += "Your summarized information will be referred to by another agent when performing future tasks. Don't mentioned specific screenshots.\n"
+        prompt += "Choose from the following options. Give your answer as \"Success\", \"Failed\" or \"Uncertain\":\n"
+        prompt += "Success: The task is successfully finished.\n"
+        prompt += "Failed: The task is not finished.\n"
+        prompt += "Uncertain: Can't determain whether the task is finished or not.\n"
+        prompt += "NOTE: Be careful when judging the task as failed. If there is not enough evidence to determine whether the task is failed, you should choose \"Uncertain\".\n\n"
 
-        prompt += "### Tips ###\n"
-        # prompt += "Carefully reflect on the interaction history of the current task. Check if there are any general tips that might be useful for handling future tasks, such as advice on preventing certain common errors. Keep your tips concise and general.\n"
-        prompt += "Carefully reflect on the interaction history of the current task. Check if there are any tips or key steps that might be useful for handling future tasks, such as advice on preventing certain errors. Keep your tips concise.\n"
+        prompt += "### Reason ###\n"
+        prompt += "Provide reason for your answer.\n"
 
         message_content = [{"type": "text","text": prompt}]
         for screenshot in screenshots:
@@ -941,16 +947,10 @@ class Evaluator(SubAgent):
 
         return messages
     
-    # def parse_response(self, response: str):
-    #     result = response.split("### Result ###")[-1].split("### Reason ###")[0].replace("\n", " ").replace("  ", " ").strip()
-    #     reason = response.split("### Reason ###")[-1].split("### Tips ###")[0].replace("\n", " ").replace("  ", " ").strip()
-    #     tips = response.split("### Tips ###")[-1].strip()
-    #     return result, reason, tips
     def parse_response(self, response: str):
-        result = response.split("### Result ###")[-1].split("### Summary ###")[0].replace("\n", " ").replace("  ", " ").strip()
-        summary = response.split("### Summary ###")[-1].split("### Tips ###")[0].replace("\n", " ").replace("  ", " ").strip()
-        tips = response.split("### Tips ###")[-1].strip()
-        return result, summary, tips
+        result = response.split("### Result ###")[-1].split("### Reason ###")[0].replace("\n", " ").replace("  ", " ").strip()
+        reason = response.split("### Reason ###")[-1].strip()
+        return result, reason, None
 
 
 class TaskSummarizer(SubAgent):
@@ -1222,7 +1222,7 @@ finished(content='') # Submit the task regardless of whether it succeeds or fail
                     prompt += "During the operations, you record the following contents on the screenshot for use in subsequent operations:\n"
                     prompt += f"{previous_step.memory}\n\n"
 
-                if hasattr(previous_step, "reflection_outcome") and previous_step.reflection_outcome is not None and previous_step.reflection_outcome != "A":
+                if hasattr(previous_step, "reflection_outcome") and previous_step.reflection_outcome is not None and previous_step.reflection_outcome in ['B', 'C']:
                     prompt += "### Latest operation ###\n"
                     prompt += f"You previously wanted to perform the operation \"{previous_step.action_desc}\" on this page and executed the Action \"{previous_step.action_s}\". But you find that this operation does not meet your expectation.\nFeedback:{previous_step.reflection_error}\n You need to reflect and revise your operation this time."
                     prompt += "\n\n"
