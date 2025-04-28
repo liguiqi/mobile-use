@@ -125,7 +125,7 @@ class MultiAgent(Agent):
             evaluate_when_finish: bool=False,
             reflect_on_demand: bool=False,
             logprob_threshold: float=-0.01,
-            include_time: bool=False,
+            include_time: bool=True,
             log_dir: str=None,
         ):
         super().__init__(env=env, vlm=vlm, max_steps=max_steps)
