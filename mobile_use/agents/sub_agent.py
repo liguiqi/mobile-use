@@ -283,12 +283,12 @@ You are provided with function signatures within <tools></tools> XML tags:
                     prompt += "If you think the reflection is reasonable, you need to reflect, reschedule, and revise your operation this time. Try to avoid the same mistake."
                     prompt += "\n\n"
 
-        if hasattr(episodedata, "evaluation_result") and episodedata.evaluation_result is not None and "Failed" in episodedata.evaluation_result:
-            prompt += "### Evaluation Result ###\n"
-            prompt += "In the last step, you think the task is finished. However, the evaluator find that the task is not finished. This is the evaluation result:\n"
-            prompt += f"Evaluation: {episodedata.evaluation_reason}\n"
-            prompt += "If you think the evaluation is reasonable, perform more actions to finish the task. Otherwise, you can terminate the task.\n"
-            prompt += "\n"
+            if hasattr(previous_step, "evaluation_result") and previous_step.evaluation_result is not None and "Failed" in previous_step.evaluation_result:
+                prompt += "### Evaluation Result ###\n"
+                prompt += "In the last step, you think the task is finished. However, the evaluator find that the task is not finished. This is the evaluation result:\n"
+                prompt += f"Evaluation: {previous_step.evaluation_reason}\n"
+                prompt += "If you think the evaluation is reasonable, perform more actions to finish the task. Otherwise, you can terminate the task.\n"
+                prompt += "\n"
 
         prompt += "### Observation ###\n"
         prompt += f"This is the current screenshot of the phone. The screen's resolution is {resized_width}x{resized_height}."

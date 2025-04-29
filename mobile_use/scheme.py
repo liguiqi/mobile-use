@@ -100,6 +100,8 @@ class StepData:
     reflection_error: Optional[str] = None
     long_reflection_outcome: Optional[str] = None
     long_reflection_error: Optional[str] = None
+    evaluation_result: Optional[str] = None
+    evaluation_reason: Optional[str] = None
     action_type_tokens: Optional[List[str]] = None
     action_type_logprobs: Optional[List[float]] = None
     step_duration: Optional[float] = None
@@ -117,6 +119,4 @@ class EpisodeData:
     retrieved_tips: Optional[str] = None
     output_tips: Optional[str] = None
     finish_count: Optional[int] = 0
-    evaluation_result: Optional[str] = None
-    evaluation_reason: Optional[str] = None
     memory: Optional[str] = ""

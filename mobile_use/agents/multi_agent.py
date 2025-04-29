@@ -608,11 +608,8 @@ class MultiAgent(Agent):
                 if result is not None and 'Failed' in result:
                     logger.info("Evaluator determines that the task is not completed for the first time. Will remove the FINISH status.")
                     self.status = None
-                    self.episode_data.evaluation_result = result
-                    self.episode_data.evaluation_reason = reason
-            else:
-                self.episode_data.evaluation_result = None
-                self.episode_data.evaluation_reason = None
+                    step_data.evaluation_result = result
+                    step_data.evaluation_reason = reason
             
             # Evolutor
             if self.use_evolutor:
