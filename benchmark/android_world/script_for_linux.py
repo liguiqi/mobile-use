@@ -15,22 +15,22 @@ output_path = args.output_path
 max_step = args.max_step
 n_task_combinations = args.n_task_combinations
 
-def kill_emulator():
-    command = 'pkill -f "qemu-system-x86_64"'
-    subprocess.run(command, shell=True)
-    command = 'pkill -f "emulator"'
-    subprocess.run(command, shell=True)
+# def kill_emulator():
+#     command = 'pkill -f "qemu-system-x86_64"'
+#     subprocess.run(command, shell=True)
+#     command = 'pkill -f "emulator"'
+#     subprocess.run(command, shell=True)
 
 for _ in range(100):
     os.environ["ANDROID_MAX_STEP"] = max_step
-    print("Starting emulator")
-    process = subprocess.Popen("adb start-server && ~/Library/Android/sdk/emulator/emulator -avd AndroidWorldAvd -no-window -no-audio -no-snapshot -grpc 8554", shell=True)
-    print("Emulator started")
-    time.sleep(120)
+    # print("Starting emulator")
+    # process = subprocess.Popen("adb start-server && ~/Library/Android/sdk/emulator/emulator -avd AndroidWorldAvd -no-window -no-audio -no-snapshot -grpc 8554", shell=True)
+    # print("Emulator started")
+    # time.sleep(120)
     print("Running script")
     subprocess.run(f"python -u run.py --checkpoint_dir={ckpt_dir} --n_task_combinations={n_task_combinations} >> {output_path} 2>&1", shell=True)
     print("Script ran")
-    print("Force Killing emulator")
-    kill_emulator()
-    print("Emulator force killed")
+    # print("Force Killing emulator")
+    # kill_emulator()
+    # print("Emulator force killed")
     time.sleep(20)
