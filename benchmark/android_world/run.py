@@ -160,7 +160,7 @@ def _get_agent(env: interface.AsyncEnv, family: str | None = None) -> base_agent
     mobile_use_vlm = mobile_use.VLMWrapper(
         model_name="qwen2.5-vl-72b-instruct",
         api_key=os.getenv('VLM_API_KEY', 'EMPTY'),
-        base_url='http://hammer-llm.oppo.test/v1',
+        base_url=os.getenv('VLM_API_URL', 'http://hammer-llm.oppo.test/v1'),
         max_tokens=1024
     )
     agent = mobile_use.Agent.from_params(dict(
