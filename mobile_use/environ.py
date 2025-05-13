@@ -5,6 +5,7 @@ import logging
 import adbutils
 from .scheme import Action, EnvState
 from mobile_use.utils import contains_chinese
+from .adb_utils import launch_app
 
 logger = logging.getLogger(__name__)
 
@@ -51,42 +52,65 @@ class Environment:
         package = self._d.app_current().package
         state = EnvState(pixels=pixels, package=package)
         return state
+    
+    def get_time(self) -> str:
+        re = self._d.shell('date')
+        time.sleep(2)
+        return re
 
     def execute_action(self, action: Action):
         answer = None
-        if action.name == 'open_app' or action.name == 'open':
+        if action.name == 'open_app':
             package_name = action.parameters['package_name']
             self._d.app_start(package_name)
+        elif action.name == 'open':
+            text = action.parameters['text']
+            launch_app(text, self._d)
         elif action.name == 'click' or action.name == 'left_click':
             if 'coordinate' in action.parameters:       # QwenAgent
                 x, y = action.parameters['coordinate']
+            elif 'start_box' in action.parameters:
+                x, y = action.parameters['start_box']
             else:
                 x, y = action.parameters['point']
             self._d.click(x, y)
         elif action.name == 'long_press':
             if 'coordinate' in action.parameters:       # QwenAgent
                 x, y = action.parameters['coordinate']
+            elif 'start_box' in action.parameters:
+                x, y = action.parameters['start_box']
             else:
                 x, y = action.parameters['point']
             duration = action.parameters.get('time', 2.0)
             self._d.swipe(x, y, x, y, duration=duration)
         elif action.name == 'type':
-            text = action.parameters['text']
+            if 'content' in action.parameters:
+                text = action.parameters['content']
+            else:
+                text = action.parameters['text']
             # self._d.send_keys(text)
             if contains_chinese(text):
+                print("TYPE: Chinese detected.")
                 charsb64 = str(base64.b64encode(text.encode('utf-8')))[1:]
-                self._d.shell(["ime", "enable", 'com.android.adbkeyboard/.AdbIME'])
+                re = self._d.shell(["ime", "enable", 'com.android.adbkeyboard/.AdbIME'])
+                print(re)
                 self._d.shell(["ime", "set", 'com.android.adbkeyboard/.AdbIME'])
                 os.system(f"adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast -a ADB_INPUT_B64 --es msg %s" %charsb64)
                 self._d.shell(["ime", "disable", 'com.android.adbkeyboard/.AdbIME'])
             else:
                 self._d.shell(["input", "text", text])
+            # # Press Enter key
+            # self._d.keyevent("ENTER")
         elif action.name == 'key':
             text = action.parameters['text']
             self._d.keyevent(text)
         elif action.name == 'scroll':
-            x1, y1 = action.parameters['start_point']
-            x2, y2 = action.parameters['end_point']
+            if 'start_box' in action.parameters:
+                x1, y1 = action.parameters['start_box']
+                x2, y2 = action.parameters['end_box']
+            else:
+                x1, y1 = action.parameters['start_point']
+                x2, y2 = action.parameters['end_point']
             self._d.swipe(x1, y1, x2, y2, duration=0.5)
         elif action.name == 'swipe':       # QwenAgent
             x1, y1 = action.parameters['coordinate']
@@ -112,6 +136,20 @@ class Environment:
                 self._d.keyevent("MENU")
             elif button == 'Enter':
                 self._d.keyevent("ENTER")
+        elif action.name == 'clear_text':
+            re = self._d.shell(["ime", "enable", 'com.android.adbkeyboard/.AdbIME'])
+            logger.info(re)
+            re = self._d.shell(["ime", "set", 'com.android.adbkeyboard/.AdbIME'])
+            logger.info(re)
+            time.sleep(1)
+            os.system(f"adb -P {self.port} -s {self._d.get_serialno()} shell am broadcast -a ADB_CLEAR_TEXT")
+            re = self._d.shell(["ime", "disable", 'com.android.adbkeyboard/.AdbIME'])
+            logger.info(re)
+            re = self._d.shell(["input", "text", " "])
+            logger.info(re)
+        elif action.name == 'take_note':
+            note = action.parameters['text']
+            return note
         else:
             raise ValueError(f"Unknown action: {action.name}")
         time.sleep(self.wait_after_action_seconds)

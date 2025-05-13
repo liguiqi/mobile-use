@@ -1,7 +1,8 @@
 from PIL import Image
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
+from datetime import datetime
 
 from .action import ACTION_SPACE
 
@@ -97,6 +98,14 @@ class StepData:
     memory: Optional[str] = None
     reflection_outcome: Optional[str] = None
     reflection_error: Optional[str] = None
+    long_reflection_outcome: Optional[str] = None
+    long_reflection_error: Optional[str] = None
+    evaluation_result: Optional[str] = None
+    evaluation_reason: Optional[str] = None
+    action_type_tokens: Optional[List[str]] = None
+    action_type_logprobs: Optional[List[float]] = None
+    step_duration: Optional[float] = None
+    exec_duration: Optional[float] = None
 
 @dataclass
 class EpisodeData:
@@ -105,3 +114,9 @@ class EpisodeData:
     status: Optional[str] = None
     message: Optional[str] = None
     trajectory: Optional[List[StepData]] = None
+    create_time: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    input_tips: Optional[str] = None
+    retrieved_tips: Optional[str] = None
+    output_tips: Optional[str] = None
+    finish_count: Optional[int] = 0
+    memory: Optional[str] = ""
