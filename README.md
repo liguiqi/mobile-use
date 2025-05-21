@@ -4,20 +4,47 @@
 
 <h2 style="text-align: center;">Mobile Use​: Your AI assistant for mobile - Any app, any task.</h2>
 
+<<<<<<< HEAD
 ![](docs/assets/framework.png)
+=======
+![](docs/assets/framework.svg)
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 
 
 [ English | [中文](docs/README_zh.md) ]
 
+<<<<<<< HEAD
 https://github.com/user-attachments/assets/c82ae51e-f0a2-4c7b-86e8-e3411d9749bb
+=======
+https://github.com/user-attachments/assets/5c4d3ce8-0135-4e6e-b003-b20f81f834d4
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 
 The user inputs the task description on the Web interface, and the Mobile Use automatically operates the mobile phone and completes the task.
 
 
+<<<<<<< HEAD
 ## 📊 Benchmark
 ![](docs/assets/benchmark.png)
 
 In the [AndroidWord](https://github.com/google-research/android_world) dynamic evaluation environment, we evaluated the Mobile Use agent solution with the multimodal large language model Qwen2.5-VL-72B-Instruct and achieved a 38% success rate.
+=======
+## 🎉 News
+- **[2025/05/13]**: Mobile Use v0.3.0 now is released! AndroidLab dynamic environment now is released! Significant improvements have been achieved on the two evaluation benchmarks of [AndroidLab](https://github.com/THUDM/Android-Lab) and [AndroidWorld](https://github.com/google-research/android_world).
+- **[2025/03/28]**: The [document](benchmark/android_world/README.md) for running Mobile Use in the AndroidWorld dynamic environment now is released!
+- **[2025/03/17]**: Mobile Use now supports the [multi-agent](mobile_use/agents/multi_agent.py) framework! Equipped with planning, reflection, memorization and progress mechanisms, Mobile Use achieves impressive performance on AndroidWorld!
+- **[2025/03/04]**: Mobile Use is released! We have also released v0.1.0 of [mobile-use](https://github.com/MadeAgents/mobile-use) library, providing you an AI assistant for mobile - Any app, any task!
+
+## 📊 Benchmark
+![](docs/assets/androidworld_benchmark.png)
+
+In the [AndroidWorld](https://github.com/google-research/android_world) dynamic evaluation environment, we evaluated the multi-agent version of Mobile Use agent with the multimodal large language model Qwen2.5-VL-72B-Instruct and achieved a 61.2% success rate.
+
+
+![](docs/assets/androidlab_benchmark.png)
+
+In the [AndroidLab](https://github.com/THUDM/Android-Lab) dynamic evaluation environment, we evaluated the multi-agent version of Mobile Use agent with the multimodal large language model Qwen2.5-VL-72B-Instruct and achieved a 44.2% success rate.
+
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 
 ## ✨ Key Features
 - **Auto-operating the phone**: Automatically operate the UI to complete tasks based on user input descriptions.
@@ -28,7 +55,11 @@ In the [AndroidWord](https://github.com/google-research/android_world) dynamic e
 `mobile-use` requires [ADB](https://developer.android.com/tools/adb) to control the phone, which necessitates the prior installation of the relevant tools and connecting the phone to the computer via USB.
 
 ### 1. Install SDK Platform-Tools
+<<<<<<< HEAD
 - Step 1. Download SDK Platform-Tools for Desktop, click [there](https://developer.android.com/tools/releases/platform-tools#downloads).
+=======
+- Step 1. Download SDK Platform-Tools for Desktop, click [here](https://developer.android.com/tools/releases/platform-tools#downloads).
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 - Step 2. Unzip the downloaded file and add the platform-tools path to the environment variables.
 
     - Windows
@@ -49,6 +80,10 @@ In the [AndroidWord](https://github.com/google-research/android_world) dynamic e
 ### 2. Enable developer mode and open USB debugging on your phone
 <img src="docs/assets/usb_debug_en.png" style="width:30%; height:auto;">
 
+<<<<<<< HEAD
+=======
+For HyperOS or MIUI, you need to turn on USB Debugging (Security Settings) at the same time.
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 
 ### 3. Connect your computer and phone using a USB cable. And verify the adb is connected.
 Run the `adb devices` (Windows: `adb.exe devices`) command on the command line terminal. If the device serial_no is listed, the connection is successful. The correct log is as follows:
@@ -58,11 +93,44 @@ a22d0110        device
 ```
 
 ### 4: Install mobile-use
+<<<<<<< HEAD
+=======
+#### Option 1:  Install package directly (Recommended)
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 With pip (Python>=3.10):
 ```
 pip install mobile-use
 ```
 
+<<<<<<< HEAD
+=======
+#### Option 2:  Install from source code
+```
+# Clone github repo
+git clone https://github.com/MadeAgents/mobile-use.git
+
+# Change directory into project directory
+cd mobile-use
+
+# Install uv if you don't have it already
+pip install uv
+
+# Create a virtual environment and install dependencies
+# We support using Python 3.10, 3.11, 3.12
+uv venv .venv --python=3.10
+
+# Activate the virtual environment
+# For macOS/Linux
+source .venv/bin/activate
+# For Windows
+.venv\Scripts\activate
+
+# Install mobile-use with all dependencies (pip >= 21.1)
+uv pip install -e .
+```
+
+
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 ### 5. Launch the webui service
 ```
 python -m mobile_use.webui
@@ -79,6 +147,20 @@ Click VLM Configuration to set the Base URL and API Key of the multimodal large 
 
 Input task descriptions in the input box at the lower left corner, click start to execute tasks.
 
+<<<<<<< HEAD
+=======
+### 7. Support Chinese characters (Optional)
+
+If you want to input Chinese characters to your phone, for example, to let MobileUse execute a command like this: search for 
+"咖啡" in the Meituan app, you need
+
+- Step 1. Download ADBKeyBoard apk, click [here](https://github.com/senzhk/ADBKeyBoard).
+- Step 2. Install ADBKeyBoard to your phone.
+  ```
+  adb install <path-to-ADBKeyboard.apk>
+  ```
+
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 **⚠️ Special Reminder**: The actions are autonomously decided by the intelligent agent, which may pose uncontrollable operational risks. It is recommended that during the experience, you constantly monitor your phone's status. If you encounter any operational risks, promptly terminate the task or use a test phone for the experience to avoid issues caused by accidental operations.
 
 
@@ -113,6 +195,14 @@ Case6：帮我去OPPO商城、京东、以及淘宝分别看一下oppofind n5售
 https://github.com/user-attachments/assets/84990487-f2a3-4921-a20e-fcdebfc8fc60
 
 
+<<<<<<< HEAD
+=======
+Case7: Turn on Bluetooth and WIFI
+
+https://github.com/user-attachments/assets/c82ae51e-f0a2-4c7b-86e8-e3411d9749bb
+
+
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 ## ⚙️ Advance
 
 ### Advance Settings
@@ -169,10 +259,20 @@ while going:
 ```
 
 
+<<<<<<< HEAD
 ## 🗺️ Roadmap
 - [ ] Improve agent memory and reflection (summarize, compress.)
 - [ ] Provide multi-agent implementation 
 - [ ] Provide an evaluation process about AndroidWorld dynamic environment 
+=======
+### Running Mobile Use in AndoirdWorld
+See [AndroidWorld.md](docs/AndroidWorld.md).
+
+## 🗺️ Roadmap
+- [x] Improve agent memory and reflection (summarize, compress.)
+- [x] Provide multi-agent implementation 
+- [x] Provide an evaluation process about AndroidWorld dynamic environment 
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 - [ ] Develop an APP that can be installed directly on the phone
 
 
@@ -203,6 +303,10 @@ If you have used this project in your research or work, please cite:
 This project benefits from the contributions of:
 - Inspiration from [browser-use](https://github.com/browser-use/browser-use)
 - The multimodal large language model for the agent is based on [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
+<<<<<<< HEAD
+=======
+- The multi-agent implementation is based on [Mobile-Agent](https://github.com/X-PLUG/MobileAgent)
+>>>>>>> 5d265d88863855836b726842ff0d3fe25a01eb81
 - The Web UI is built on [Gradio](https://www.gradio.app)
 
 Thanks for their wonderful works.

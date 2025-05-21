@@ -7,17 +7,21 @@
 
 [ 中文 | [English](../README.md) ]
 
-https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
+https://github.com/user-attachments/assets/5c4d3ce8-0135-4e6e-b003-b20f81f834d4
 
 用户在 Web 界面输入自然语言指令，Mobile Use 的 GUI 智能体自动操作手机并完成任务。
 
 **⚠️特别提醒**：操作动作由智能体自主决定，可能存在不可控的操作风险，建议体验是时刻关注手机动态如遇到操作风险及时终止任务或者使用测试手机进行体验，避免误操作带来问题。
 
+## 🎉 News
+- **[2025/03/28]**: 在 AndroidWorld 动态环境中运行 Mobile Use 的[文档](AndroidWorld.md)现已发布！
+- **[2025/03/17]**: MMobile Use 现在支持[多智能体](../mobile_use/agents/multi_agent.py)框架！配备了规划、反思、记忆和进展机制，Mobile Use 在 AndroidWorld 上实现了令人印象深刻的性能！
+- **[2025/03/04]**: Mobile Use 已发布！我们还发布了 [mobile-use](https://github.com/MadeAgents/mobile-use) 库的 v0.1.0 版本，为您提供移动设备的 AI 助手——任何应用，任何任务！
 
 ## 📊 Benchmark
 ![](assets/benchmark.png)
 
-我们在 [AndroidWord](https://github.com/google-research/android_world) 动态测评环境中评估了 Mobile Use 的智能体方案（模型使用 Qwen2.5-VL-72B-Instruct），获得 38% 的成功率。
+我们在 [AndroidWord](https://github.com/google-research/android_world) 动态测评环境中评估了 Mobile Use 的多智能体方案（模型使用 Qwen2.5-VL-72B-Instruct），获得了 48% 的成功率。
 
 ## ✨ 核心特性
 - **自动操作手机**：基于用户的输入任务描述，自动操作UI完成任务
@@ -52,6 +56,7 @@ https://github.com/user-attachments/assets/7cd023b6-816f-4514-93cc-62bcb1d888c5
 ### 2. 启用开发者模式并打开手机上的USB调试
 <img src="assets/usb_debug_zh.png" style="width:30%; height:auto;">
 
+对于 HyperOS 或 MIUI，你需要同时打开 "USB调试(安全设置)"。
 
 ### 3. 通过USB线连接电脑和手机，并验证 adb 是否已连接
 在命令行终端执行 `adb devices` （Windows：`adb.exe devices`）命令，如果列出设备号表示已连接成功，正确的日志如下：
@@ -61,10 +66,37 @@ a22d0110        device
 ```
 
 ### 4: 安装 mobile-use
-使用 pip 安装 (Python>=3.10):
+#### Option 1: 直接安装包 (推荐)
+Python>=3.10
 ```
 pip install mobile-use
 ```
+
+#### Option 2: 从源码安装
+```
+# Clone github repo
+git clone https://github.com/MadeAgents/mobile-use.git
+
+# Change directory into project directory
+cd mobile-use
+
+# Install uv if you don't have it already
+pip install uv
+
+# Create a virtual environment and install dependencies
+# We support using Python 3.10, 3.11, 3.12
+uv venv .venv --python=3.10
+
+# Activate the virtual environment
+# For macOS/Linux
+source .venv/bin/activate
+# For Windows
+.venv\Scripts\activate
+
+# Install mobile-use with all dependencies (pip >= 21.1)
+uv pip install -e .
+```
+
 
 ### 5. 启动服务
 ```
@@ -82,6 +114,16 @@ python -m mobile_use.webui
 
 
 在左下方的输入框输入任务描述，点击开始即可执行任务。
+
+### 7. 支持中文字符 (可选)
+
+如果你想在手机上输入中文字符，比如让 MobileUse 执行这样的命令：在美团app里搜索咖啡，你需要
+
+- Step 1. 下载 ADBKeyBoard apk, 点击 [这里](https://github.com/senzhk/ADBKeyBoard).
+- Step 2. 将 ADBKeyBoard 安装到你的手机里.
+  ```
+  adb install <path-to-ADBKeyboard.apk>
+  ```
 
 
 ## 🎉 More Demo
@@ -113,6 +155,10 @@ https://github.com/user-attachments/assets/4c3d8800-78b7-4323-aad2-8338fe81cb81
 Case6：帮我去OPPO商城、京东、以及淘宝分别看一下oppofind n5售价是多少
 
 https://github.com/user-attachments/assets/84990487-f2a3-4921-a20e-fcdebfc8fc60
+
+Case7: Turn on Bluetooth and WIFI
+
+https://github.com/user-attachments/assets/c82ae51e-f0a2-4c7b-86e8-e3411d9749bb
 
 
 ## ⚙️ 高级用法
@@ -166,11 +212,13 @@ while going:
         print(step_data.action, step_data.thought)
 ```
 
+### 在 AndoirdWorld 中使用 Mobile Use
+见 [AndroidWorld.md](AndroidWorld.md).
 
 ## 🗺️ Roadmap
-- [ ] 改进智能体的记忆和提升智能体的反思能力 (summarize, compress.)
-- [ ] 基于多智能体探索提升整体任务的效果
-- [ ] 提供一个关于AndroidWorld动态环境的评估流程
+- [x] 改进智能体的记忆和提升智能体的反思能力 (summarize, compress.)
+- [x] 基于多智能体探索提升整体任务的效果
+- [x] 提供一个关于AndroidWorld动态环境的评估流程
 - [ ] 开发一个可以直接安装在手机上的APP
 
 
@@ -202,6 +250,7 @@ while going:
 本项目得益于：
 - 灵感来自 [browser-use](https://github.com/browser-use/browser-use)
 - 智能体的多模态大模型是基于 [Qwen2.5-VL](https://huggingface.co/collections/Qwen/qwen25-vl-6795ffac22b334a837c0f9a5)
+- 多智能体方案的实现是基于 [Mobile-Agent](https://github.com/X-PLUG/MobileAgent)
 - Web UI 是基于 [Gradio](https://www.gradio.app)
 
 感谢他们的精彩工作。

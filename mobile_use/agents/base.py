@@ -22,21 +22,21 @@ class Agent(ABC, Registrable):
         self.messages = []
         self.curr_step_idx = 0
         self.trajectory: List[StepData] = []
-        self.episode_data: EpisodeData = EpisodeData(num_steps=0, trajectory=self.trajectory)
+        self.episode_data: EpisodeData = EpisodeData(goal=goal, num_steps=0, trajectory=self.trajectory)
 
     @abstractmethod
     def reset(self, *args, **kwargs) -> None:
         """Reset Agent to init state"""
 
     @abstractmethod
-    def step(self, stream: bool=False) -> Iterator[StepData]:
+    def step(self) -> StepData:
         """Get the next step action based on the current environment state.
 
-        Returns: The content is an iterator for StepData
+        Returns: StepData
         """
 
     @abstractmethod
-    def iter_run(self, input_content: str, stream: bool=True) -> Iterator[StepData]:
+    def iter_run(self, input_content: str) -> Iterator[StepData]:
         """Execute all step with maximum number of steps base on user input content.
 
         Returns: The content is an iterator for StepData
